@@ -46,7 +46,14 @@ const kicker = lang === "en"
 
   {n >= 2
     ? <PerfChart lang={lang} data={r} liveStart={results.live_start} name={p.name} />
-    : null}
+    : (
+      <div class="chart-empty">
+        <p class="ce-title">{t.chartTitle}</p>
+        <p>{lang === "en"
+          ? `The chart appears once the first close is calculated: the estimated year to date to ${fmtDate(lang, results.live_start)}, then one point per month end.`
+          : `El gráfico aparece cuando se calcule el primer cierre: el año estimado hasta el ${fmtDate(lang, results.live_start)} y después un punto por cada fin de mes.`}</p>
+      </div>
+    )}
   <p class="muted">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}</p>
 
 <div class="two">
@@ -87,6 +94,10 @@ const kicker = lang === "en"
   dl { display: flex; flex-wrap: wrap; gap: 12px 40px; margin: 0 0 6px; }
   dt { font-size: 0.82rem; color: var(--muted); }
   dd { margin: 0; font-size: 1.15rem; color: var(--ink); }
+  .chart-empty { border: 1px dashed var(--line); border-radius: 8px; padding: 28px 24px; margin: 0 0 1rem;
+                 min-height: 220px; display: flex; flex-direction: column; justify-content: center; }
+  .chart-empty p { max-width: 62ch; color: var(--text-2); margin: 0; }
+  .chart-empty .ce-title { font-family: var(--serif); font-size: 1.15rem; color: var(--ink); margin-bottom: 0.5rem; }
   .two { display: grid; gap: 0 64px; }
   @media (min-width: 900px) { .two { grid-template-columns: 1.7fr 1fr; } }
   .bench { list-style: none; padding: 0; margin: 0 0 1rem; border-top: 1px solid var(--line); }
