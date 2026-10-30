@@ -18,8 +18,6 @@ class Instrument:
     share_class: str
     block: str
     asset_class: str
-    nav_frequency: str = "daily"
-    trade_lag_days: int | None = None
 
 
 @dataclass(frozen=True)
@@ -61,8 +59,6 @@ def load_instruments(root: Path = ROOT) -> dict[str, Instrument]:
         out[f["isin"]] = Instrument(
             isin=f["isin"], name=f["name"], share_class=f["share_class"], block=f["block"],
             asset_class=blocks[f["block"]]["asset_class"],
-            nav_frequency=f.get("nav_frequency", "daily"),
-            trade_lag_days=f.get("trade_lag_days"),
         )
     return out
 

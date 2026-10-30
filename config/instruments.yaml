@@ -1,119 +1,80 @@
 # Instrument master. One entry per ISIN; always the exact share class (all EUR).
 # block -> asset_class mapping lives in config/blocks.yaml.
-# trade_lag_days: business days between a decision's effective date and the NAV at
-#   which the trade executes. null = not yet verified; the engine refuses to apply a
-#   rebalance that needs it until it is filled in.
-# nav_frequency: daily | weekly. Non-daily NAVs are carried forward between publications.
+# All NAVs are daily except Fermat (weekly); see MAX_GAP_DAYS in src/jocari/engine.py.
 
 funds:
   - isin: LU0034353002
     name: DWS Floating Rate Notes
     share_class: LC
     block: liquidity_short_term
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: FR0013506995
     name: Lazard Euro Short Duration Income Opportunities SRI
     share_class: RVC EUR
     block: liquidity_short_term
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: IE00BFZMJT78
     name: Neuberger Berman Short Duration Euro Bond
     share_class: EUR I Acc
     block: liquidity_short_term
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: ES0112618006
     name: B&H Deuda
     share_class: FI
     block: liquidity_short_term
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU2200514128
     name: Pareto Nordic Cross Credit
     share_class: R EUR
     block: liquidity_short_term
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU1623762843
     name: Carmignac Portfolio Credit
     share_class: A EUR Acc
     block: credit_flexible
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: IE000VA5W9H0
     name: Man Global Investment Grade Opportunities
     share_class: I H EUR Acc
     block: credit_flexible
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: ES0140794001
     name: Gamma Global
     share_class: A
     block: credit_flexible  # holds ~6% equity; accepted and counted as fixed income (decision 2026-10-30)
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU1694789535
     name: DNCA Invest Alpha Bonds
     share_class: B EUR
     block: defensive_alternatives
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU1112771503
     name: Helium Selection
     share_class: B-EUR
     block: defensive_alternatives
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: IE000N9XFSD0
-    name: Fermat UCITS Cat Bond Fund
+    name: Fermat UCITS Cat Bond Fund  # weekly NAV
     share_class: Institutional EUR Acc
     block: defensive_alternatives
-    nav_frequency: weekly
-    trade_lag_days: null
   - isin: IE00BLP5S460
     name: Jupiter Merian Global Equity Absolute Return
     share_class: L EUR Hedged Acc
     block: aggressive_alternatives
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU1593227850
     name: BlackRock Systematic Asia Pacific Equity Absolute Return
     share_class: D2 EUR Hedged
     block: aggressive_alternatives
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: IE00BYX5NX33
     name: Fidelity MSCI World Index
     share_class: EUR P Acc
     block: equity_index
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: ES0124037005
     name: Cobas Selección
     share_class: C
     block: equity_value
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: ES0112611001
     name: Azvalor Internacional
     share_class: FI
     block: equity_value
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU0329355670
     name: Robeco QI Emerging Markets Active Equities
     share_class: D EUR
     block: equity_emerging
-    nav_frequency: daily
-    trade_lag_days: null
   - isin: LU1213836080
     name: Fidelity Global Technology
     share_class: A-Acc-EUR
     block: equity_technology
-    nav_frequency: daily
-    trade_lag_days: null
 
 # Benchmark proxies: accumulating ETFs, EUR quote.
 benchmarks:
