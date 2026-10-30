@@ -1,36 +1,73 @@
 ---
 import Base from "../layouts/Base.astro";
-import RiskLadder from "../components/RiskLadder.astro";
-import ReturnsTable from "../components/ReturnsTable.astro";
+import PortfolioCards from "../components/PortfolioCards.astro";
 import { T, href, fmtPeriod, fmtDate } from "../lib/i18n.js";
-import { loadPortfolios, loadResults, PORTFOLIO_IDS } from "../lib/data.js";
+import { loadPortfolios, loadResults } from "../lib/data.js";
 import { listCommentary } from "../lib/content.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
-const portfolios = loadPortfolios();
 const results = loadResults();
 const latest = listCommentary(lang).find((c) => c.filled);
-const intro = lang === "en"
-  ? "Five model portfolios of investment funds, from 0% to 100% equity, each tracked every month against a passive benchmark with the same mix. Every decision is recorded publicly before it takes effect."
-  : "Cinco carteras modelo de fondos de inversión, del 0 % al 100 % de renta variable, cada una seguida mes a mes frente a un benchmark pasivo con su misma mezcla. Cada decisión se registra públicamente antes de entrar en vigor.";
+const copy = lang === "en" ? {
+  eyebrow: "Model portfolios · Market commentary",
+  h1: "Five fund portfolios, measured against the market every month.",
+  lede: "From 0% to 100% equity, each portfolio is compared with a passive benchmark of the same mix. Every decision is recorded publicly before it takes effect.",
+  how: "How it works",
+  steps: [
+    ["Static weights", "Each portfolio holds fixed target weights and is reset to them at every month end."],
+    ["Public decision log", "Target weights live in a public repository. Any change is committed before it applies."],
+    ["Honest benchmark", "Each profile is compared with ETFs holding its same share of equity and short-duration bonds."],
+  ],
+} : {
+  eyebrow: "Carteras modelo · Comentario de mercado",
+  h1: "Cinco carteras de fondos, medidas frente al mercado cada mes.",
+  lede: "Del 0 % al 100 % de renta variable, cada cartera se compara con un benchmark pasivo de su misma mezcla. Cada decisión se registra públicamente antes de entrar en vigor.",
+  how: "Cómo funciona",
+  steps: [
+    ["Pesos estáticos", "Cada cartera tiene pesos objetivo fijos y vuelve a ellos a cada fin de mes."],
+    ["Registro público de decisiones", "Los pesos objetivo están en un repositorio público. Cualquier cambio se registra antes de aplicarse."],
+    ["Benchmark honesto", "Cada perfil se compara con ETFs con su mismo porcentaje de renta variable y de bonos a corto plazo."],
+  ],
+};
 ---
-<Base lang={lang}>
-  <h1>Jocari Alpha</h1>
-  <p class="lede">{intro}</p>
-
-  <h2>{t.ladder}</h2>
-  <RiskLadder lang={lang} portfolios={portfolios} />
-
-  <h2>{t.portfolio} vs {t.benchmark}</h2>
-  <ReturnsTable lang={lang} results={results} ids={PORTFOLIO_IDS} />
-  <p class="muted">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}{" "}
+<Base lang={lang} eyebrow={copy.eyebrow} heading={copy.h1} lede={copy.lede}>
+  <div slot="head" class="head-space"></div>
+  <PortfolioCards lang={lang} portfolios={loadPortfolios()} results={results} />
+  <p class="muted note">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}{" "}
     <a href={href(lang, "methodology/")}>{t.nav.methodology}</a></p>
 
+  <h2>{copy.how}</h2>
+  <ol class="how">
+    {copy.steps.map(([h, p], i) => (
+      <li><span class="num figure">0{i + 1}</span><h3>{h}</h3><p>{p}</p></li>
+    ))}
+  </ol>
+
   <h2>{t.latestCommentary}</h2>
-  {latest
-    ? <p><a href={href(lang, `commentary/${latest.slug}/`)}>{latest.title || fmtPeriod(lang, latest.period)}</a>
-        <span class="muted"> · {fmtPeriod(lang, latest.period)}</span></p>
-    : <p class="placeholder">{t.comingSoon}</p>}
-  <p><a href={href(lang, "commentary/")}>{t.allCommentary} →</a></p>
+  <div class="latest">
+    {latest
+      ? <a class="latest-link" href={href(lang, `commentary/${latest.slug}/`)}>
+          <span class="eyebrow">{fmtPeriod(lang, latest.period)}</span>
+          <span class="lt">{latest.title || fmtPeriod(lang, latest.period)}</span></a>
+      : <p class="placeholder">{t.comingSoon}</p>}
+    <a href={href(lang, "commentary/")}>{t.allCommentary} →</a>
+  </div>
 </Base>
+<style>
+  .head-space { height: 2.5rem; }
+  .note { margin-top: 0.75rem; }
+  .how { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+  @media (min-width: 720px) { .how { grid-template-columns: repeat(3, 1fr); gap: 40px; border-top: 0; } }
+  .how li { padding: 20px 0; border-bottom: 1px solid var(--line); }
+  @media (min-width: 720px) { .how li { border-bottom: 0; border-top: 1px solid var(--line); } }
+  .how .num { color: var(--gold); font-size: 1.1rem; }
+  .how h3 { margin: 0.4rem 0 0.4rem; }
+  .how p { color: var(--text-2); margin: 0; }
+  .latest { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
+            border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 0; }
+  .latest .placeholder { margin: 0; }
+  .latest-link { display: flex; flex-direction: column; text-decoration: none; color: var(--text); }
+  .latest-link .eyebrow { margin: 0; }
+  .lt { font-family: var(--serif); font-size: 1.3rem; }
+</style>

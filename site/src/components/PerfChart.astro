@@ -50,7 +50,7 @@ const summary = last > 0
 </figure>
 
 <script>
-  import { createChart, LineSeries, LineStyle, createSeriesMarkers } from "lightweight-charts";
+  import { createChart, LineSeries, LineStyle } from "lightweight-charts";
 
   const css = (el: Element, v: string) => getComputedStyle(el).getPropertyValue(v).trim();
 
@@ -89,14 +89,12 @@ const summary = last > 0
     const p = split(d.portfolio), b = split(d.benchmark);
     const hasLive = p.live.length > 1;
     const series = {
-      pEst: mk("", true, d.labels.portfolio, !hasLive), bEst: mk("", true, d.labels.benchmark, !hasLive),
+      pEst: mk("", true, hasLive ? "" : d.labels.portfolio, !hasLive), bEst: mk("", true, hasLive ? "" : d.labels.benchmark, !hasLive),
       pLive: hasLive ? mk("", false, d.labels.portfolio, true) : null,
       bLive: hasLive ? mk("", false, d.labels.benchmark, true) : null,
     };
     series.pEst.setData(p.est); series.bEst.setData(b.est);
     series.pLive?.setData(p.live); series.bLive?.setData(b.live);
-    const markers = series.pLive ? createSeriesMarkers(series.pLive, []) : null;
-
     const paint = () => {
       const c1 = css(fig, "--series-1"), c2 = css(fig, "--series-2");
       chart.applyOptions({
@@ -107,8 +105,7 @@ const summary = last > 0
       });
       for (const [s, c] of [[series.pEst, c1], [series.pLive, c1], [series.bEst, c2], [series.bLive, c2]] as const)
         s?.applyOptions({ color: c, crosshairMarkerBorderColor: css(fig, "--surface") });
-      markers?.setMarkers([{ time: d.liveStart, position: "belowBar", shape: "arrowUp",
-                             color: css(fig, "--muted"), text: d.labels.live }]);
+
     };
     paint();
     window.addEventListener("themechange", paint);

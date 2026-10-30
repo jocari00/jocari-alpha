@@ -29,12 +29,14 @@ export function loadTracking() {
   return loadYaml(read("config/tracking.yaml"));
 }
 
-/** Results computed by `jocari compute`. Falls back to clearly labelled sample data. */
+/** Results computed by `jocari compute`. Until they exist, no figures at all are shown
+ *  (`pending: true`): the site never displays invented or sample returns. */
 export function loadResults() {
   const real = path.join(ROOT, "data/results.json");
-  if (fs.existsSync(real)) return { ...JSON.parse(fs.readFileSync(real, "utf8")), sample: false };
-  const sample = path.join(process.cwd(), "src/data/sample-results.json");
-  return { ...JSON.parse(fs.readFileSync(sample, "utf8")), sample: true };
+  if (fs.existsSync(real)) return { ...JSON.parse(fs.readFileSync(real, "utf8")), pending: false };
+  const tr = loadTracking();
+  const iso = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d));
+  return { base_date: iso(tr.base_date), live_start: iso(tr.live_start), portfolios: {}, pending: true };
 }
 
 /** Composition by block (target weights; weights are static). */

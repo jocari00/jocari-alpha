@@ -3,7 +3,7 @@ liquidity_short_term:    {asset_class: fixed_income, label: "Liquidity & short-t
 credit_flexible:         {asset_class: fixed_income, label: "Credit & flexible fixed income"}
 defensive_alternatives:  {asset_class: fixed_income, label: "Defensive alternatives"}
 aggressive_alternatives: {asset_class: equity,       label: "Aggressive alternatives"}
-equity_index:            {asset_class: equity,       label: "Equity - index"}
-equity_value:            {asset_class: equity,       label: "Equity - value"}
-equity_emerging:         {asset_class: equity,       label: "Equity - emerging markets"}
-equity_technology:       {asset_class: equity,       label: "Equity - technology"}
+equity_index:            {asset_class: equity,       label: "Global equity (index)"}
+equity_value:            {asset_class: equity,       label: "Value equity"}
+equity_emerging:         {asset_class: equity,       label: "Emerging-market equity"}
+equity_technology:       {asset_class: equity,       label: "Technology equity"}

@@ -7,8 +7,8 @@ const { lang } = Astro.props;
 const t = T[lang];
 const items = listCommentary(lang);
 ---
-<Base lang={lang} title={t.nav.commentary} path="commentary/">
-  <h1>{t.nav.commentary}</h1>
+<Base lang={lang} title={t.nav.commentary} path="commentary/" eyebrow={lang === "en" ? "Monthly and quarterly" : "Mensual y trimestral"} heading={t.nav.commentary}>
+  <div slot="head" style="height:1rem"></div>
   <ol class="archive">
     {items.map((c) => (
       <li>
@@ -20,4 +20,9 @@ const items = listCommentary(lang);
     ))}
   </ol>
 </Base>
-<style>.archive { padding-left: 1.2rem; } .archive li { margin-bottom: 0.6rem; }</style>
+<style>
+  .archive { list-style: none; padding: 0; margin: 2.5rem 0 0; border-top: 1px solid var(--line); }
+  .archive li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .archive a { font-family: var(--serif); font-size: 1.25rem; text-decoration: none; color: var(--text); }
+  .archive a:hover { color: var(--accent-ink); }
+</style>

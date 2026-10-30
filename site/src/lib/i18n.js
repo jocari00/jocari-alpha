@@ -11,7 +11,7 @@ export const T = {
     theme: "Toggle light/dark theme",
     footer: "Model portfolios for educational and illustrative purposes only. Not investment advice or a personalised recommendation. No third-party money is managed. Past performance does not guarantee future returns. Figures before 30 Oct 2026 are estimated.",
     fullLegal: "Full legal notice",
-    sample: "Preview with sample data — these are not real returns. Real figures appear after the first monthly calculation.",
+    pending: "Tracking starts on 30 October 2026. The first figures (the estimated year to date, then each month end) are published after that close is calculated.",
     equity: "Equity", fixedIncome: "Fixed income",
     portfolio: "Portfolio", benchmark: "Benchmark", difference: "Difference",
     ytd: "YTD", sinceStart: "Since 31 Dec 2025", lastPeriod: "Last period",
@@ -29,7 +29,7 @@ export const T = {
     written: "Written", period: "Period", monthReturns: "Returns for the period",
     onlyIn: (l) => `This commentary is only available in ${l === "es" ? "Spanish" : "English"}.`,
     ladder: "Risk ladder", ladderNote: "Each profile is described in general terms. None of them is a recommendation for any particular person.",
-    profiles: "The five profiles", notValued: "Not yet valued",
+    profiles: "The five profiles", notValued: "First figures after the October close",
     inquiries: "For professional inquiries",
   },
   es: {
@@ -40,7 +40,7 @@ export const T = {
     theme: "Cambiar tema claro/oscuro",
     footer: "Carteras modelo con fines exclusivamente educativos e ilustrativos. No constituye asesoramiento ni recomendación personalizada. No se gestiona dinero de terceros. Las rentabilidades pasadas no garantizan rentabilidades futuras. Las cifras anteriores al 30 oct 2026 son estimadas.",
     fullLegal: "Aviso legal completo",
-    sample: "Vista previa con datos de ejemplo: no son rentabilidades reales. Las cifras reales aparecerán tras el primer cálculo mensual.",
+    pending: "El seguimiento empieza el 30 de octubre de 2026. Las primeras cifras (el año estimado y después cada fin de mes) se publican cuando se calcule ese cierre.",
     equity: "Renta variable", fixedIncome: "Renta fija",
     portfolio: "Cartera", benchmark: "Benchmark", difference: "Diferencia",
     ytd: "En el año", sinceStart: "Desde el 31 dic 2025", lastPeriod: "Último periodo",
@@ -58,7 +58,7 @@ export const T = {
     written: "Escrito", period: "Periodo", monthReturns: "Rentabilidades del periodo",
     onlyIn: (l) => `Este comentario solo está disponible en ${l === "es" ? "español" : "inglés"}.`,
     ladder: "Escalera de riesgo", ladderNote: "Cada perfil se describe de forma general. Ninguno es una recomendación para una persona concreta.",
-    profiles: "Los cinco perfiles", notValued: "Aún sin valorar",
+    profiles: "Los cinco perfiles", notValued: "Primeras cifras tras el cierre de octubre",
     inquiries: "For professional inquiries",
   },
 };
@@ -69,10 +69,10 @@ export const BLOCK_LABELS = {
     credit_flexible: "Crédito y renta fija flexible",
     defensive_alternatives: "Alternativos defensivos",
     aggressive_alternatives: "Alternativos agresivos",
-    equity_index: "Renta variable indexada",
+    equity_index: "Renta variable global (indexada)",
     equity_value: "Renta variable value",
     equity_emerging: "Renta variable emergente",
-    equity_technology: "Renta variable tecnología",
+    equity_technology: "Renta variable tecnológica",
   },
 };
 

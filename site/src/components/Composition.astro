@@ -1,44 +1,69 @@
 ---
-// Target weights by block and by fund (weights are static, so current = target).
+// Allocation by block as one stacked bar (blue shades = equity, gold shades = fixed income),
+// a legend list with weights, and the fund detail of each block behind a disclosure.
 import { T, weight, blockLabel } from "../lib/i18n.js";
 interface Props { lang: "en" | "es"; blocks: any[]; fundNotes: Record<string, string>; blockNotes: Record<string, string> }
 const { lang, blocks, fundNotes, blockNotes } = Astro.props;
 const t = T[lang];
-const max = Math.max(...blocks.map((b) => b.weight));
+const shade = (b: any, i: number) => {
+  const same = blocks.filter((x) => x.asset_class === b.asset_class);
+  const k = same.indexOf(b), steps = [100, 72, 50, 34];
+  const base = b.asset_class === "equity" ? "var(--series-1)" : "var(--gold)";
+  return `color-mix(in srgb, ${base} ${steps[k % steps.length]}%, var(--surface))`;
+};
 ---
-<div class="comp">
+<div class="alloc">
+  <div class="stack" role="img" aria-label={blocks.map((b) => `${blockLabel(lang, b.block, b.label)} ${b.weight} %`).join(", ")}>
+    {blocks.map((b, i) => <span style={`flex:${b.weight};background:${shade(b, i)}`}></span>)}
+  </div>
+  <ul class="blocks">
+    {blocks.map((b, i) => (
+      <li>
+        <details>
+          <summary>
+            <span class="sw" style={`background:${shade(b, i)}`}></span>
+            <span class="bl">{blockLabel(lang, b.block, b.label)}</span>
+            <span class="ac">{b.asset_class === "equity" ? t.equity : t.fixedIncome}</span>
+            <span class="w figure">{weight(lang, b.weight)}</span>
+          </summary>
+          {blockNotes?.[b.block] && <p class="note">{blockNotes[b.block]}</p>}
+          <table>
+            <tbody>
+              {b.funds.map((f: any) => (
+                <tr>
+                  <td>{f.name}<span class="muted"> · {f.share_class}</span>
+                    {fundNotes?.[f.isin] && <div class="note">{fundNotes[f.isin]}</div>}</td>
+                  <td class="muted isin">{f.isin}</td>
+                  <td class="num">{weight(lang, f.weight)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      </li>
+    ))}
+  </ul>
   <p class="muted">{t.staticWeights}</p>
-  {blocks.map((b) => (
-    <section class="block">
-      <div class="row head">
-        <h3>{blockLabel(lang, b.block, b.label)} <span class="tag">{b.asset_class === "equity" ? t.equity : t.fixedIncome}</span></h3>
-        <span class="w">{weight(lang, b.weight)}</span>
-      </div>
-      <div class="bar" aria-hidden="true"><span style={`width:${(b.weight / max) * 100}%`}></span></div>
-      <p class={blockNotes?.[b.block] ? "note" : "note placeholder"}>{blockNotes?.[b.block] || t.comingSoon}</p>
-      <table>
-        <caption class="sr">{t.byFund}</caption>
-        <tbody>
-          {b.funds.map((f: any) => (
-            <tr>
-              <td>{f.name}<span class="muted"> · {f.share_class} · {f.isin}</span>
-                {fundNotes?.[f.isin] && <div class="note">{fundNotes[f.isin]}</div>}</td>
-              <td class="num">{weight(lang, f.weight)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  ))}
 </div>
 <style>
-  .block { margin: 0 0 1.5rem; }
-  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  h3 { margin: 0.5rem 0 0.4rem; font-family: var(--font); font-size: 1rem; }
-  .w { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .bar { height: 6px; background: var(--surface-2); border-radius: 4px; margin-bottom: 8px; }
-  .bar span { display: block; height: 100%; background: var(--series-1); border-radius: 4px; }
-  .note { font-size: 0.9rem; color: var(--text-2); margin: 0.25rem 0 0.5rem; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  td { padding: 6px 8px; }
+  .stack { display: flex; gap: 2px; height: 14px; margin: 0 0 1.25rem; }
+  .stack span:first-child { border-radius: 2px 0 0 2px; } .stack span:last-child { border-radius: 0 2px 2px 0; }
+  .blocks { list-style: none; padding: 0; margin: 0 0 1rem; border-top: 1px solid var(--line); }
+  .blocks li { border-bottom: 1px solid var(--line); }
+  summary { display: grid; grid-template-columns: 14px 1fr auto 4.5rem; align-items: center; gap: 12px;
+            padding: 14px 0; cursor: pointer; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; grid-column: 5; color: var(--muted); font-size: 1.1rem; width: 1rem; text-align: center; }
+  details[open] summary::after { content: "–"; }
+  summary { grid-template-columns: 14px 1fr auto 4.5rem 1rem; }
+  .sw { width: 14px; height: 14px; border-radius: 2px; }
+  .bl { font-weight: 500; }
+  .ac { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .w { text-align: right; font-size: 1.05rem; }
+  details table { margin: 0 0 14px 26px; width: calc(100% - 26px); font-size: 0.88rem; }
+  details td { padding: 8px 6px; border-bottom: 1px dashed var(--line); }
+  details tr:last-child td { border-bottom: 0; }
+  .isin { font-size: 0.78rem; white-space: nowrap; }
+  .note { font-size: 0.9rem; color: var(--text-2); margin: 0 0 8px 26px; }
+  @media (max-width: 560px) { .ac, .isin { display: none; } summary { grid-template-columns: 14px 1fr 4.2rem 1rem; } summary::after { grid-column: 4; } }
 </style>
