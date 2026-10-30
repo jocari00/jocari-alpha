@@ -8,7 +8,7 @@ const t = T[lang];
 const shade = (b: any, i: number) => {
   const same = blocks.filter((x) => x.asset_class === b.asset_class);
   const k = same.indexOf(b), steps = [100, 72, 50, 34];
-  const base = b.asset_class === "equity" ? "var(--series-1)" : "var(--gold)";
+  const base = b.asset_class === "equity" ? "var(--series-1)" : "var(--muted)";
   return `color-mix(in srgb, ${base} ${steps[k % steps.length]}%, var(--surface))`;
 };
 ---
@@ -31,7 +31,7 @@ const shade = (b: any, i: number) => {
             <tbody>
               {b.funds.map((f: any) => (
                 <tr>
-                  <td>{f.name}<span class="muted"> · {f.share_class}</span>
+                  <td>{f.name}<span class="muted">, {f.share_class}</span>
                     {fundNotes?.[f.isin] && <div class="note">{fundNotes[f.isin]}</div>}</td>
                   <td class="muted isin">{f.isin}</td>
                   <td class="num">{weight(lang, f.weight)}</td>
@@ -47,7 +47,7 @@ const shade = (b: any, i: number) => {
 </div>
 <style>
   .stack { display: flex; gap: 2px; height: 14px; margin: 0 0 1.25rem; }
-  .stack span:first-child { border-radius: 2px 0 0 2px; } .stack span:last-child { border-radius: 0 2px 2px 0; }
+  .stack span:first-child { border-radius: 3px 0 0 3px; } .stack span:last-child { border-radius: 0 3px 3px 0; }
   .blocks { list-style: none; padding: 0; margin: 0 0 1rem; border-top: 1px solid var(--line); }
   .blocks li { border-bottom: 1px solid var(--line); }
   summary { display: grid; grid-template-columns: 14px 1fr auto 4.5rem; align-items: center; gap: 12px;
@@ -58,7 +58,7 @@ const shade = (b: any, i: number) => {
   summary { grid-template-columns: 14px 1fr auto 4.5rem 1rem; }
   .sw { width: 14px; height: 14px; border-radius: 2px; }
   .bl { font-weight: 500; }
-  .ac { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ac { font-size: 0.82rem; color: var(--muted); }
   .w { text-align: right; font-size: 1.05rem; }
   details table { margin: 0 0 14px 26px; width: calc(100% - 26px); font-size: 0.88rem; }
   details td { padding: 8px 6px; border-bottom: 1px dashed var(--line); }

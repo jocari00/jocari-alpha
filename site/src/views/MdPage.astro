@@ -9,13 +9,13 @@ const page = getPage(name, lang);
 const { Content } = page;
 const linkedin = name === "about" ? page.frontmatter.linkedin : null;
 ---
-<Base lang={lang} title={page.title} path={`${name}/`} eyebrow="Jocari Alpha" heading={page.title}>
+<Base lang={lang} title={page.title} path={`${name}/`} heading={page.title}>
   <div slot="head" style="height:1rem"></div>
   <article class="prose md"><Content /></article>
   {name === "about" && (
     <p>{linkedin
-      ? <a href={linkedin} rel="noopener">LinkedIn — {t.inquiries}</a>
-      : <span class="placeholder">LinkedIn — {t.inquiries}</span>}</p>
+      ? <>{t.inquiries}: <a href={linkedin} rel="noopener">LinkedIn</a></>
+      : <span class="placeholder">{t.inquiries}: LinkedIn</span>}</p>
   )}
 </Base>
 <style>.md { margin-top: 2.5rem; } .md :global(h2:first-child) { margin-top: 0; }</style>

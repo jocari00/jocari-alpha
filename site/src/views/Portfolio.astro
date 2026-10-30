@@ -27,26 +27,29 @@ if (n >= 2) {
 const benchNames: Record<string, string> = { IE00B6R52259: "MSCI ACWI", IE00B3VTMJ91: "€ Govt Bond 1-3yr", IE00BH04FZ00: "EUR Corporate 1-3yr" };
 const idx = PORTFOLIO_IDS.indexOf(id);
 const prev = all[idx - 1], next = all[idx + 1];
-const eyebrow = `${lang === "en" ? "Model portfolio" : "Cartera modelo"} · ${p.equity} % ${t.equity.toLowerCase()} · ${p.fixedIncome} % ${t.fixedIncome.toLowerCase()}`;
+const kicker = lang === "en"
+  ? `Model portfolio with ${p.equity}% equity and ${p.fixedIncome}% fixed income`
+  : `Cartera modelo con un ${p.equity} % de renta variable y un ${p.fixedIncome} % de renta fija`;
 ---
-<Base lang={lang} title={p.name} path={`portfolios/${id}/`} eyebrow={eyebrow} heading={p.name}>
-  <div slot="head" class="stats">
-    {ytd ? (<>
-      <div><span class="k">{t.ytd}{ytd.estimated ? ` · ${t.estimated}` : ""}</span><span class="v figure">{pct(lang, ytd.p)}</span></div>
-      <div><span class="k">{t.benchmark}</span><span class="v figure">{pct(lang, ytd.b)}</span></div>
-      <div><span class="k">{t.difference}</span><span class={`v figure ${sign(ytd.p - ytd.b)}`}>{pct(lang, ytd.p - ytd.b)}</span></div>
-      <div><span class="k">{lang === "en" ? "As of" : "A fecha"}</span><span class="v small">{fmtDate(lang, ytd.asof)}</span></div>
-    </>) : <p class="pend">{t.notValued}</p>}
-  </div>
+<Base lang={lang} title={p.name} path={`portfolios/${id}/`} kicker={kicker} heading={p.name}>
+  {ytd && (
+    <div slot="head" class="stats">
+      <p class="hero-num">{pct(lang, ytd.p)}</p>
+      <dl>
+        <div><dt>{lang === "en" ? "Return this year" : "Rentabilidad en el año"}</dt>
+             <dd>{lang === "en" ? "to" : "a"} {fmtDate(lang, ytd.asof)}{ytd.estimated ? ` (${t.estimated.toLowerCase()})` : ""}</dd></div>
+        <div><dt>{t.benchmark}</dt><dd>{pct(lang, ytd.b)}</dd></div>
+        <div><dt>{t.difference}</dt><dd class={sign(ytd.p - ytd.b)}>{pct(lang, ytd.p - ytd.b)}</dd></div>
+      </dl>
+    </div>
+  )}
 
-  <div class="lift">
-    {n >= 2
-      ? <PerfChart lang={lang} data={r} liveStart={results.live_start} name={p.name} />
-      : <div class="card empty"><span class="eyebrow">{t.chartTitle}</span><p>{t.pending}</p></div>}
-  </div>
+  {n >= 2
+    ? <PerfChart lang={lang} data={r} liveStart={results.live_start} name={p.name} />
+    : null}
   <p class="muted">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}</p>
 
-  <div class="two">
+<div class="two">
     <section>
       <h2>{t.composition}</h2>
       <Composition lang={lang} blocks={composition(p, ins)} fundNotes={ed.funds} blockNotes={ed.blocks} />
@@ -59,7 +62,7 @@ const eyebrow = `${lang === "en" ? "Model portfolio" : "Cartera modelo"} · ${p.
               <span><strong>{benchNames[isin]}</strong><br /><span class="muted">{ins.benchmarks[isin].name}</span></span></li>
         ))}
       </ul>
-      <p class="muted"><a href={href(lang, "methodology/")}>{t.nav.methodology} →</a></p>
+      <p class="muted"><a href={href(lang, "methodology/")}>{lang === "en" ? "How the benchmark is built" : "Cómo se construye el benchmark"}</a></p>
 
       <h2>{t.commentary}</h2>
       {ed.portfolios?.[id]
@@ -67,37 +70,32 @@ const eyebrow = `${lang === "en" ? "Model portfolio" : "Cartera modelo"} · ${p.
         : <p class="placeholder">{t.comingSoon}</p>}
       {mentions.length > 0 && (
         <ul class="mentions">{mentions.map((c) => (
-          <li><a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a> — {c.portfolios[id]}</li>
+          <li><a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a>: {c.portfolios[id]}</li>
         ))}</ul>
       )}
     </aside>
   </div>
 
   <nav class="pager" aria-label={t.nav.portfolios}>
-    {prev ? <a href={href(lang, `portfolios/${prev.id}/`)}>← {prev.name}</a> : <span></span>}
-    {next ? <a href={href(lang, `portfolios/${next.id}/`)}>{next.name} →</a> : <span></span>}
+    {prev ? <a href={href(lang, `portfolios/${prev.id}/`)}><span class="muted">{lang === "en" ? "Less equity" : "Menos renta variable"}</span>{prev.name}</a> : <span></span>}
+    {next ? <a class="nx" href={href(lang, `portfolios/${next.id}/`)}><span class="muted">{lang === "en" ? "More equity" : "Más renta variable"}</span>{next.name}</a> : <span></span>}
   </nav>
 </Base>
 <style>
-  .stats { display: flex; flex-wrap: wrap; gap: 20px 48px; margin-top: 1.75rem; padding-bottom: 3.5rem; }
-  .stats div { display: flex; flex-direction: column; }
-  .k { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-navy-2); }
-  .v { font-size: clamp(1.7rem, 4vw, 2.4rem); color: var(--on-navy); line-height: 1.2; }
-  .v.pos { color: #8fdcab; } .v.neg { color: #ff9c90; }
-  .v.small { font-family: var(--font); font-size: 1rem; margin-top: auto; }
-  .pend { color: var(--on-navy-2); margin: 0; }
-  .lift { margin-top: -3.5rem; position: relative; z-index: 1; }
-  .lift :global(.perf) { margin-top: 0; box-shadow: 0 10px 30px rgb(11 31 58 / 0.08); }
-  .empty { padding: 36px 28px; }
-  .empty p { margin: 0.5rem 0 0; color: var(--text-2); max-width: 60ch; }
-  .two { display: grid; gap: 0 56px; }
+  .stats { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 56px; margin: 2rem 0 2.5rem; }
+  .hero-num { font-size: clamp(3rem, 9vw, 4.6rem); line-height: 1; font-weight: 500; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
+  dl { display: flex; flex-wrap: wrap; gap: 12px 40px; margin: 0 0 6px; }
+  dt { font-size: 0.82rem; color: var(--muted); }
+  dd { margin: 0; font-size: 1.15rem; color: var(--ink); }
+  .two { display: grid; gap: 0 64px; }
   @media (min-width: 900px) { .two { grid-template-columns: 1.7fr 1fr; } }
   .bench { list-style: none; padding: 0; margin: 0 0 1rem; border-top: 1px solid var(--line); }
   .bench li { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
-  .bw { font-size: 1.3rem; min-width: 4.2rem; color: var(--accent-ink); }
+  .bw { font-size: 1.25rem; min-width: 4.2rem; color: var(--ink); }
   .mentions { padding-left: 1.1rem; }
-  .pager { display: flex; justify-content: space-between; margin-top: 4rem; padding-top: 20px; border-top: 1px solid var(--line);
-           font-family: var(--serif); font-size: 1.1rem; }
-  .pager a { text-decoration: none; color: var(--text); }
+  .pager { display: flex; justify-content: space-between; gap: 24px; margin-top: 4.5rem; padding-top: 22px; border-top: 1px solid var(--line); }
+  .pager a { display: flex; flex-direction: column; text-decoration: none; font-family: var(--serif); font-size: 1.25rem; color: var(--ink); }
   .pager a:hover { color: var(--accent-ink); }
+  .pager .nx { text-align: right; }
+  .pager .muted { font-family: var(--font); font-size: 0.82rem; }
 </style>

@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import PortfolioCards from "../components/PortfolioCards.astro";
+import Spectrum from "../components/Spectrum.astro";
 import { T, href, fmtPeriod, fmtDate } from "../lib/i18n.js";
 import { loadPortfolios, loadResults } from "../lib/data.js";
 import { listCommentary } from "../lib/content.js";
@@ -10,64 +10,49 @@ const t = T[lang];
 const results = loadResults();
 const latest = listCommentary(lang).find((c) => c.filled);
 const copy = lang === "en" ? {
-  eyebrow: "Model portfolios · Market commentary",
-  h1: "Five fund portfolios, measured against the market every month.",
-  lede: "From 0% to 100% equity, each portfolio is compared with a passive benchmark of the same mix. Every decision is recorded publicly before it takes effect.",
-  how: "How it works",
-  steps: [
-    ["Static weights", "Each portfolio holds fixed target weights and is reset to them at every month end."],
-    ["Public decision log", "Target weights live in a public repository. Any change is committed before it applies."],
-    ["Honest benchmark", "Each profile is compared with ETFs holding its same share of equity and short-duration bonds."],
+  h1: "Five model portfolios, from all bonds to all equity.",
+  lede: "Each one is measured every month against a passive mix with the same share of equity. Decisions are recorded publicly before they take effect.",
+  how: "How the portfolios are run",
+  points: [
+    ["Fixed weights", "Each portfolio has target weights per fund and returns to them at every month end, so the result reflects the allocation, not timing."],
+    ["Decisions on record", "The weights live in a public repository. A change is committed before it applies, with its date, so it can't be rewritten after the fact."],
+    ["A fair yardstick", "The benchmark holds the same share of equity as the portfolio, in a world equity ETF, and the rest in short-dated euro government and corporate bonds."],
   ],
+  latest: "Latest commentary", all: "Read all commentary",
 } : {
-  eyebrow: "Carteras modelo · Comentario de mercado",
-  h1: "Cinco carteras de fondos, medidas frente al mercado cada mes.",
-  lede: "Del 0 % al 100 % de renta variable, cada cartera se compara con un benchmark pasivo de su misma mezcla. Cada decisión se registra públicamente antes de entrar en vigor.",
-  how: "Cómo funciona",
-  steps: [
-    ["Pesos estáticos", "Cada cartera tiene pesos objetivo fijos y vuelve a ellos a cada fin de mes."],
-    ["Registro público de decisiones", "Los pesos objetivo están en un repositorio público. Cualquier cambio se registra antes de aplicarse."],
-    ["Benchmark honesto", "Cada perfil se compara con ETFs con su mismo porcentaje de renta variable y de bonos a corto plazo."],
+  h1: "Cinco carteras modelo, de todo bonos a todo bolsa.",
+  lede: "Cada una se mide cada mes frente a una combinación pasiva con su mismo peso en renta variable. Las decisiones se registran públicamente antes de entrar en vigor.",
+  how: "Cómo se gestionan las carteras",
+  points: [
+    ["Pesos fijos", "Cada cartera tiene pesos objetivo por fondo y vuelve a ellos a cada fin de mes, de modo que el resultado refleja la asignación y no el momento de entrada."],
+    ["Decisiones registradas", "Los pesos están en un repositorio público. Un cambio se registra antes de aplicarse, con su fecha, así que no se puede reescribir después."],
+    ["Una vara de medir justa", "El benchmark tiene el mismo peso en renta variable que la cartera, en un ETF de bolsa mundial, y el resto en bonos en euros de gobierno y empresa a corto plazo."],
   ],
+  latest: "Último comentario", all: "Leer todos los comentarios",
 };
 ---
-<Base lang={lang} eyebrow={copy.eyebrow} heading={copy.h1} lede={copy.lede}>
-  <div slot="head" class="head-space"></div>
-  <PortfolioCards lang={lang} portfolios={loadPortfolios()} results={results} />
-  <p class="muted note">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}{" "}
-    <a href={href(lang, "methodology/")}>{t.nav.methodology}</a></p>
+<Base lang={lang} heading={copy.h1} lede={copy.lede}>
+  <Spectrum lang={lang} portfolios={loadPortfolios()} results={results} />
+  <p class="muted note">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}
+    {" "}<a href={href(lang, "methodology/")}>{t.nav.methodology}</a></p>
 
   <h2>{copy.how}</h2>
-  <ol class="how">
-    {copy.steps.map(([h, p], i) => (
-      <li><span class="num figure">0{i + 1}</span><h3>{h}</h3><p>{p}</p></li>
-    ))}
-  </ol>
-
-  <h2>{t.latestCommentary}</h2>
-  <div class="latest">
-    {latest
-      ? <a class="latest-link" href={href(lang, `commentary/${latest.slug}/`)}>
-          <span class="eyebrow">{fmtPeriod(lang, latest.period)}</span>
-          <span class="lt">{latest.title || fmtPeriod(lang, latest.period)}</span></a>
-      : <p class="placeholder">{t.comingSoon}</p>}
-    <a href={href(lang, "commentary/")}>{t.allCommentary} →</a>
+  <div class="points">
+    {copy.points.map(([h, p]) => <div><h3>{h}</h3><p>{p}</p></div>)}
   </div>
+
+  <h2>{copy.latest}</h2>
+  {latest
+    ? <p class="latest"><a href={href(lang, `commentary/${latest.slug}/`)}>{latest.title || fmtPeriod(lang, latest.period)}</a>
+        <span class="muted">{fmtPeriod(lang, latest.period)}</span></p>
+    : <p class="placeholder">{t.comingSoon}</p>}
+  <p><a href={href(lang, "commentary/")}>{copy.all}</a></p>
 </Base>
 <style>
-  .head-space { height: 2.5rem; }
-  .note { margin-top: 0.75rem; }
-  .how { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
-  @media (min-width: 720px) { .how { grid-template-columns: repeat(3, 1fr); gap: 40px; border-top: 0; } }
-  .how li { padding: 20px 0; border-bottom: 1px solid var(--line); }
-  @media (min-width: 720px) { .how li { border-bottom: 0; border-top: 1px solid var(--line); } }
-  .how .num { color: var(--gold); font-size: 1.1rem; }
-  .how h3 { margin: 0.4rem 0 0.4rem; }
-  .how p { color: var(--text-2); margin: 0; }
-  .latest { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
-            border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 0; }
-  .latest .placeholder { margin: 0; }
-  .latest-link { display: flex; flex-direction: column; text-decoration: none; color: var(--text); }
-  .latest-link .eyebrow { margin: 0; }
-  .lt { font-family: var(--serif); font-size: 1.3rem; }
+  .note { margin-top: 1.25rem; max-width: 80ch; }
+  .points { display: grid; gap: 28px; }
+  @media (min-width: 760px) { .points { grid-template-columns: repeat(3, 1fr); gap: 44px; } }
+  .points p { color: var(--text-2); margin: 0; }
+  .latest { display: flex; flex-direction: column; gap: 2px; }
+  .latest a { font-family: var(--serif); font-size: 1.35rem; text-decoration: none; }
 </style>

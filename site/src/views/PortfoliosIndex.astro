@@ -1,20 +1,18 @@
 ---
 import Base from "../layouts/Base.astro";
-import RiskLadder from "../components/RiskLadder.astro";
-import PortfolioCards from "../components/PortfolioCards.astro";
+import Spectrum from "../components/Spectrum.astro";
 import ReturnsTable from "../components/ReturnsTable.astro";
 import { T } from "../lib/i18n.js";
 import { loadPortfolios, loadResults, PORTFOLIO_IDS } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
+const results = loadResults();
 ---
-<Base lang={lang} title={t.nav.portfolios} path="portfolios/" eyebrow={t.ladder} heading={t.nav.portfolios}
+<Base lang={lang} title={t.nav.portfolios} path="portfolios/" heading={t.nav.portfolios}
       lede={lang === "en" ? "Five profiles from 0% to 100% equity. Each is described in general terms; none is a recommendation for any particular person."
                           : "Cinco perfiles del 0 % al 100 % de renta variable. Cada uno se describe de forma general; ninguno es una recomendación para una persona concreta."}>
-  <PortfolioCards lang={lang} portfolios={loadPortfolios()} results={loadResults()} />
-  <h2>{t.ladder}</h2>
-  <RiskLadder lang={lang} portfolios={loadPortfolios()} />
-  <h2>{t.portfolio} vs {t.benchmark}</h2>
-  <ReturnsTable lang={lang} results={loadResults()} ids={PORTFOLIO_IDS} />
+  <Spectrum lang={lang} portfolios={loadPortfolios()} results={results} />
+  <h2>{lang === "en" ? "Since the start" : "Desde el inicio"}</h2>
+  <ReturnsTable lang={lang} results={results} ids={PORTFOLIO_IDS} />
 </Base>

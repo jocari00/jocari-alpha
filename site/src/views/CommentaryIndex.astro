@@ -7,22 +7,24 @@ const { lang } = Astro.props;
 const t = T[lang];
 const items = listCommentary(lang);
 ---
-<Base lang={lang} title={t.nav.commentary} path="commentary/" eyebrow={lang === "en" ? "Monthly and quarterly" : "Mensual y trimestral"} heading={t.nav.commentary}>
+<Base lang={lang} title={t.nav.commentary} path="commentary/" heading={t.nav.commentary}
+      lede={lang === "en" ? "A note at each month end on what moved the portfolios, plus quarterly notes for 2026 before tracking began."
+                          : "Una nota a cada fin de mes sobre qué movió las carteras, más notas trimestrales de 2026 anteriores al seguimiento."}>
   <div slot="head" style="height:1rem"></div>
   <ol class="archive">
     {items.map((c) => (
       <li>
         <a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a>
-        {c.title && <span> — {c.title}</span>}
-        {!c.filled && <span class="placeholder"> · {t.comingSoon}</span>}
-        {c.written && <span class="muted"> · {t.written} {fmtDate(lang, c.written)}</span>}
+        {c.title && <span class="ct">{c.title}</span>}
+        {!c.filled && <span class="placeholder">{t.comingSoon}</span>}
+        {c.written && <span class="muted">{t.written} {fmtDate(lang, c.written)}</span>}
       </li>
     ))}
   </ol>
 </Base>
 <style>
   .archive { list-style: none; padding: 0; margin: 2.5rem 0 0; border-top: 1px solid var(--line); }
-  .archive li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .archive li { display: flex; flex-direction: column; gap: 2px; padding: 18px 0; border-bottom: 1px solid var(--line); }
   .archive a { font-family: var(--serif); font-size: 1.25rem; text-decoration: none; color: var(--text); }
   .archive a:hover { color: var(--accent-ink); }
 </style>

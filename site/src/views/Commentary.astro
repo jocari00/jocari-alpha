@@ -12,10 +12,10 @@ const { Content } = c;
 const names = Object.fromEntries(loadPortfolios().map((p) => [p.id, p.name]));
 const heading = c.title || fmtPeriod(lang, c.period);
 ---
-<Base lang={lang} title={heading} path={`commentary/${slug}/`} eyebrow={t.nav.commentary} heading={heading}
-      lede={`${t.period}: ${fmtPeriod(lang, c.period)}${c.written ? ` · ${t.written} ${fmtDate(lang, c.written)}` : ""}`}>
+<Base lang={lang} title={heading} path={`commentary/${slug}/`} kicker={fmtPeriod(lang, c.period)} heading={heading}
+      lede={c.written ? `${t.written} ${fmtDate(lang, c.written, { day: "numeric", month: "long", year: "numeric" })}` : undefined}>
   <div slot="head" style="height:1rem"></div>
-  <p class="muted crumb"><a href={href(lang, "commentary/")}>← {t.allCommentary}</a></p>
+  <p class="muted crumb"><a href={href(lang, "commentary/")}>{t.allCommentary}</a></p>
   {c.fallback && <p class="muted" role="note">{t.onlyIn(c.shownLang)}</p>}
 
   {c.kind === "monthly" && <PeriodReturns lang={lang} results={loadResults()} ids={PORTFOLIO_IDS} period={c.period} />}

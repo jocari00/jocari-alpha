@@ -17,7 +17,7 @@ const asof = rows.find((r) => r.valued)?.asof;
 ---
 <div class="table-scroll">
   <table>
-    <caption class="muted">{t.sinceStart}{asof ? ` → ${fmtDate(lang, asof)}` : ""}</caption>
+    <caption class="muted">{t.sinceStart}{asof ? (lang === "en" ? ` to ${fmtDate(lang, asof)}` : ` hasta el ${fmtDate(lang, asof)}`) : ""}</caption>
     <thead><tr><th scope="col">{t.nav.portfolios}</th><th class="num">{t.portfolio}</th><th class="num">{t.benchmark}</th><th class="num">{t.difference}</th><th></th></tr></thead>
     <tbody>
       {rows.map((r) => (

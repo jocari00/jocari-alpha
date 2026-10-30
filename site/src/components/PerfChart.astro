@@ -118,7 +118,7 @@ const summary = last > 0
       const i = d.dates.indexOf(param.time as string);
       if (i < 0) { tip.hidden = true; return; }
       const kind = i === 0 ? "" : d.dates[i] <= d.liveStart ? d.labels.estimated : d.labels.live;
-      tip.innerHTML = `<strong>${df.format(new Date(d.dates[i] + "T00:00:00Z"))}</strong>${kind ? ` · ${kind}` : ""}
+      tip.innerHTML = `<strong>${df.format(new Date(d.dates[i] + "T00:00:00Z"))}</strong>${kind ? `, ${kind.toLowerCase()}` : ""}
         <div><span class="key key-1"></span>${d.labels.portfolio} ${nf.format(d.portfolio[i])}</div>
         <div><span class="key key-2"></span>${d.labels.benchmark} ${nf.format(d.benchmark[i])}</div>`;
       tip.hidden = false;
@@ -142,9 +142,9 @@ const summary = last > 0
 </script>
 
 <style>
-  .perf { margin: 1rem 0 2rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  .perf { margin: 0 0 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 20px 14px; }
   .perf-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
-  figcaption { font-weight: 600; }
+  figcaption { font-family: var(--serif); font-size: 1.15rem; color: var(--ink); }
   .ranges { display: flex; gap: 4px; }
   .ranges button { font: inherit; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;
                    background: none; border: 1px solid var(--line); color: var(--text-2); }
