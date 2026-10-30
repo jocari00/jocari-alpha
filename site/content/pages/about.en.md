@@ -1,7 +1,7 @@
 ---
 title: About
 # Your LinkedIn profile URL (the only contact on the site):
-linkedin: ""
+linkedin: "https://www.linkedin.com/in/jordi-carreras-ribot/"
 ---
 
 I'm Jordi, a student of the double degree in Artificial Intelligence and Business Administration at

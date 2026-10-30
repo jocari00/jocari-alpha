@@ -1,7 +1,7 @@
 ---
 title: Sobre mí
 # URL de tu perfil de LinkedIn (el único contacto de la web):
-linkedin: ""
+linkedin: "https://www.linkedin.com/in/jordi-carreras-ribot/"
 ---
 
 Soy Jordi, estudiante del doble grado en Inteligencia Artificial y ADE en ESADE, consultor de datos
