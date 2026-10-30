@@ -1,22 +1,87 @@
 ---
 import Base from "../layouts/Base.astro";
-import Spectrum from "../components/Spectrum.astro";
+import MiniChart from "../components/MiniChart.astro";
 import ReturnsTable from "../components/ReturnsTable.astro";
 import AllocationMatrix from "../components/AllocationMatrix.astro";
-import { T } from "../lib/i18n.js";
+import { T, href, pct, fmtDate } from "../lib/i18n.js";
 import { loadPortfolios, loadResults, loadInstruments, PORTFOLIO_IDS } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
+const en = lang === "en";
 const results = loadResults();
+const portfolios = loadPortfolios();
+const sign = (x: number) => (x > 0 ? "pos" : x < 0 ? "neg" : "");
+const cards = portfolios.map((p) => {
+  const r = results.portfolios[p.id];
+  const n = r?.dates?.length ?? 0;
+  if (n < 2) return { ...p, r: null };
+  const year = r.dates[n - 1].slice(0, 4);
+  const i = Math.max(r.dates.findLastIndex((d: string) => d < `${year}-01-01`), 0);
+  return { ...p, r, ytdP: r.portfolio[n - 1] / r.portfolio[i] - 1, ytdB: r.benchmark[n - 1] / r.benchmark[i] - 1 };
+});
+// One shared vertical scale for all five small multiples.
+const allVals = cards.flatMap((c: any) => (c.r ? [...c.r.portfolio, ...c.r.benchmark] : []));
+const lo = allVals.length ? Math.min(...allVals) : 100, hi = allVals.length ? Math.max(...allVals) : 100;
 ---
-<Base lang={lang} title={t.nav.portfolios} path="portfolios/" heading={t.nav.portfolios}
-      lede={lang === "en" ? "Five profiles from 0% to 100% equity. Each is described in general terms; none is a recommendation for any particular person."
-                          : "Cinco perfiles del 0 % al 100 % de renta variable. Cada uno se describe de forma general; ninguno es una recomendación para una persona concreta."}>
-  <Spectrum lang={lang} portfolios={loadPortfolios()} results={results} />
-  <h2>{lang === "en" ? "Since the start" : "Desde el inicio"}</h2>
+<Base lang={lang} title={t.nav.portfolios} path="portfolios/" heading={en ? "The five portfolios, side by side" : "Las cinco carteras, una al lado de otra"}
+      lede={en ? "Each portfolio against its own benchmark on one shared scale, the returns since the start and every fund's target weight."
+               : "Cada cartera frente a su propio benchmark en una misma escala, las rentabilidades desde el inicio y el peso objetivo de cada fondo."}>
+  <ul class="key">
+    <li><i class="k-p"></i>{t.portfolio}</li>
+    <li><i class="k-b"></i>{t.benchmark}</li>
+    <li><i class="k-e"></i>{t.estimated}</li>
+  </ul>
+  <ol class="multiples">
+    {cards.map((c) => (
+      <li>
+        <a href={href(lang, `portfolios/${c.id}/`)}>
+          <span class="name">{c.name}</span>
+          <span class="label mix">{en ? `${c.equity}% equity` : `${c.equity} % renta variable`}</span>
+          {c.r ? (<>
+            <MiniChart dates={c.r.dates} portfolio={c.r.portfolio} benchmark={c.r.benchmark} liveStart={results.live_start} lo={lo} hi={hi}
+                       label={`${c.name}: ${t.portfolio} ${pct(lang, c.ytdP)}, ${t.benchmark} ${pct(lang, c.ytdB)}`} />
+            <span class="figs">
+              <span class="ytd">{pct(lang, c.ytdP)}</span>
+              <span class="bm">{t.benchmark} {pct(lang, c.ytdB)}</span>
+              <span class="bm">{t.difference} <span class={sign(c.ytdP - c.ytdB)}>{pct(lang, c.ytdP - c.ytdB)}</span></span>
+            </span>
+          </>) : (
+            <span class="empty">{en ? `Chart after the close of ${fmtDate(lang, results.live_start)}` : `Gráfico tras el cierre del ${fmtDate(lang, results.live_start)}`}</span>
+          )}
+        </a>
+      </li>
+    ))}
+  </ol>
+
+  <h2>{en ? "Since the start" : "Desde el inicio"}</h2>
   <ReturnsTable lang={lang} results={results} ids={PORTFOLIO_IDS} />
-  <h2>{lang === "en" ? "Target weights by portfolio" : "Pesos objetivo por cartera"}</h2>
+
+  <h2>{en ? "Target weights by portfolio" : "Pesos objetivo por cartera"}</h2>
   <p class="muted">{t.staticWeights}</p>
-  <AllocationMatrix lang={lang} portfolios={loadPortfolios()} instruments={loadInstruments()} />
+  <AllocationMatrix lang={lang} portfolios={portfolios} instruments={loadInstruments()} />
 </Base>
+<style>
+  .key { display: flex; flex-wrap: wrap; gap: 6px 22px; list-style: none; padding: 0; margin: 2.5rem 0 12px; font-size: 0.85rem; color: var(--text-2); }
+  .key i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; margin-right: 8px; vertical-align: middle; }
+  .key .k-p { border-color: var(--series-1); } .key .k-b { border-color: var(--series-2); } .key .k-e { border-top-style: dashed; border-color: var(--muted); }
+  .multiples { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(5, 1fr);
+               border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .multiples li + li { border-left: 1px solid var(--line); }
+  .multiples a { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 18px 16px 20px; color: var(--text); text-decoration: none; }
+  .multiples a:hover .name { color: var(--accent-ink); }
+  .name { font-size: 1.1rem; font-weight: 500; color: var(--ink); }
+  .mix { margin: 0 0 12px; }
+  .figs { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
+  .ytd { font-size: 1.5rem; font-weight: 300; letter-spacing: -0.02em; color: var(--ink); }
+  .bm { font-size: 0.85rem; color: var(--text-2); }
+  .empty { display: grid; place-items: center; min-height: 96px; padding: 12px; border: 1px dashed var(--line); border-radius: 4px;
+           color: var(--muted); font-size: 0.85rem; text-align: center; }
+  @media (max-width: 900px) {
+    .multiples { grid-template-columns: 1fr 1fr; }
+    .multiples li + li { border-left: 0; }
+    .multiples li { border-bottom: 1px solid var(--line); }
+    .multiples li:nth-child(odd) { border-right: 1px solid var(--line); }
+  }
+  @media (max-width: 520px) { .multiples { grid-template-columns: 1fr; } .multiples li:nth-child(odd) { border-right: 0; } }
+</style>

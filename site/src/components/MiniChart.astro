@@ -1,0 +1,37 @@
+---
+// Small static chart (build-time SVG): growth of 100 for a portfolio and its benchmark.
+// Same encoding as the main chart: portfolio = series-1, benchmark = series-2, the
+// estimated period dashed. Values are read in the table and on the portfolio page.
+interface Props { dates: string[]; portfolio: number[]; benchmark: number[]; liveStart: string; label: string;
+                  lo?: number; hi?: number }
+// lo/hi let a set of small multiples share one vertical scale, so their movements compare honestly.
+const { dates, portfolio, benchmark, liveStart, label } = Astro.props;
+const W = 240, H = 96, P = 6;
+const ts = dates.map((d) => Date.parse(d + "T00:00:00Z"));
+const all = [...portfolio, ...benchmark];
+const lo = Astro.props.lo ?? Math.min(...all), hi = Astro.props.hi ?? Math.max(...all), span = hi - lo || 1;
+const x = (i: number) => P + ((ts[i] - ts[0]) / ((ts[ts.length - 1] - ts[0]) || 1)) * (W - 2 * P);
+const y = (v: number) => H - P - ((v - lo) / span) * (H - 2 * P);
+const k = Math.max(dates.findIndex((d) => d >= liveStart), 0);
+const pts = (vals: number[], from: number, to: number) =>
+  vals.slice(from, to + 1).map((v, j) => `${x(from + j).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+const last = dates.length - 1;
+---
+<svg class="mini" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} preserveAspectRatio="none">
+  <line x1={P} x2={W - P} y1={y(100)} y2={y(100)} class="base" />
+  <polyline points={pts(benchmark, 0, k)} class="b est" />
+  <polyline points={pts(portfolio, 0, k)} class="p est" />
+  {last > k && <polyline points={pts(benchmark, k, last)} class="b" />}
+  {last > k && <polyline points={pts(portfolio, k, last)} class="p" />}
+  <circle cx={x(last)} cy={y(benchmark[last])} r="3" class="bd" />
+  <circle cx={x(last)} cy={y(portfolio[last])} r="3" class="pd" />
+</svg>
+<style>
+  .mini { display: block; width: 100%; height: 96px; overflow: visible; }
+  .base { stroke: var(--grid); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  polyline { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .p { stroke: var(--series-1); } .b { stroke: var(--series-2); }
+  .est { stroke-dasharray: 4 3; }
+  .pd { fill: var(--series-1); stroke: var(--bg); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .bd { fill: var(--series-2); stroke: var(--bg); stroke-width: 2; vector-effect: non-scaling-stroke; }
+</style>

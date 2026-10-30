@@ -27,6 +27,10 @@ const kindLabel = (k: string) => ({ initial: en ? "Initial allocation" : "Asigna
       heading={en ? "Five model portfolios, from all bonds to all equity." : "Cinco carteras modelo, de todo bonos a todo bolsa."}
       lede={en ? "Each one is measured every month against a passive mix with the same share of equity. Decisions are recorded publicly before they take effect."
                : "Cada una se mide cada mes frente a una combinación pasiva con su mismo peso en renta variable. Las decisiones se registran públicamente antes de entrar en vigor."}>
+  <div slot="head" class="cta-row">
+    <a class="btn-primary" href={href(lang, "portfolios/")}>{en ? "See the portfolios" : "Ver las carteras"}</a>
+    <a class="btn-quiet" href={href(lang, "methodology/")}>{en ? "How they are measured" : "Cómo se miden"}</a>
+  </div>
   <Spectrum lang={lang} portfolios={portfolios} results={results} />
   <p class="muted note">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}
     {" "}<a href={href(lang, "methodology/")}>{t.nav.methodology}</a></p>
@@ -71,6 +75,7 @@ const kindLabel = (k: string) => ({ initial: en ? "Initial allocation" : "Asigna
 </Base>
 <style>
   .note { margin-top: 1rem; max-width: 80ch; }
+  .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 1.75rem; }
   .cols { display: grid; gap: 40px; margin-top: 4rem; }
   @media (min-width: 900px) { .cols { grid-template-columns: repeat(3, 1fr); gap: 48px; } }
   .col-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }

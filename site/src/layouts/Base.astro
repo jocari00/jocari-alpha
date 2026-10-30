@@ -219,6 +219,10 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .tag { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
          padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
   .figure { font-variant-numeric: tabular-nums lining-nums; }
+  .btn-primary { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 4px;
+                 background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 0.95rem; text-decoration: none; }
+  .btn-primary:hover { color: var(--on-accent); filter: brightness(1.15); }
+  .btn-quiet { font-size: 0.95rem; color: var(--accent-ink); }
   .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); }
   .segmented button { font: 500 0.78rem var(--font); padding: 6px 12px; border: 0; border-left: 1px solid var(--line);
                       background: none; color: var(--text-2); cursor: pointer; }
