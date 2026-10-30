@@ -59,7 +59,7 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
               border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   .spectrum li + li { border-left: 1px solid var(--line); }
   .spectrum a { display: flex; flex-direction: column; height: 100%; padding: 20px 18px 22px; color: var(--text); text-decoration: none; }
-  .spectrum a:hover .name { color: var(--accent-ink); }
+  .spectrum a:is(:hover, :focus-visible) .name { color: var(--accent-ink); }
   .name { font-size: 1.15rem; font-weight: 500; letter-spacing: -0.01em; color: var(--ink); }
   .mix { margin: 2px 0 18px; }
   .col { display: flex; flex-direction: column; gap: 2px; height: 220px; margin-bottom: 18px; }
@@ -80,9 +80,13 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
   .k-eq { background: var(--series-1); } .k-fi { background: var(--fi); }
 
   /* One orchestrated moment: the columns rise in sequence on load. */
+  /* "backwards" (not "both"): once the rise ends the column is free to react to hover. */
   @media (prefers-reduced-motion: no-preference) {
-    .col { transform-origin: bottom; animation: rise 700ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i) * 90ms); }
+    .col { transform-origin: bottom; animation: rise 700ms cubic-bezier(.2,.7,.2,1) backwards; animation-delay: calc(var(--i) * 90ms);
+           transition: transform 200ms ease-out; }
     @keyframes rise { from { transform: scaleY(0.04); opacity: 0.4; } to { transform: none; opacity: 1; } }
+    /* Hover / keyboard focus: the column lifts slightly to signal it opens the portfolio. */
+    .spectrum a:is(:hover, :focus-visible) .col { transform: scale(1.04); }
   }
 
   /* Phones: one row per portfolio, the column becomes a horizontal bar. */
@@ -99,6 +103,7 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
     .ytd { font-size: 1.3rem; }
     @media (prefers-reduced-motion: no-preference) {
       .col { transform-origin: left; animation-name: grow; }
+      .spectrum a:is(:hover, :focus-visible) .col { transform: none; }
       @keyframes grow { from { transform: scaleX(0.04); } to { transform: none; } }
     }
   }
