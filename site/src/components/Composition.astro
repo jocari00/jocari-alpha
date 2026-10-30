@@ -33,7 +33,6 @@ const shade = (b: any, i: number) => {
                 <tr>
                   <td>{f.name}<span class="cls mono">{f.share_class}</span>
                     {fundNotes?.[f.isin] && <div class="note">{fundNotes[f.isin]}</div>}</td>
-                  <td class="muted isin">{f.isin}</td>
                   <td class="num">{weight(lang, f.weight)}</td>
                 </tr>
               ))}
@@ -63,8 +62,7 @@ const shade = (b: any, i: number) => {
   details table { margin: 0 0 14px 26px; width: calc(100% - 26px); font-size: 0.88rem; }
   details td { padding: 8px 6px; border-bottom: 1px dashed var(--line); }
   details tr:last-child td { border-bottom: 0; }
-  .isin { font-family: var(--mono); font-size: 12px; white-space: nowrap; }
   .cls { display: block; color: var(--muted); font-size: 12px; }
   .note { font-size: 0.9rem; color: var(--text-2); margin: 0 0 8px 26px; }
-  @media (max-width: 560px) { .ac, .isin { display: none; } summary { grid-template-columns: 14px 1fr 4.2rem 1rem; } summary::after { grid-column: 4; } }
+  @media (max-width: 560px) { .ac { display: none; } summary { grid-template-columns: 14px 1fr 4.2rem 1rem; } summary::after { grid-column: 4; } }
 </style>
