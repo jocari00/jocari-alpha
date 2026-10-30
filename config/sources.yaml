@@ -1,0 +1,73 @@
+# Where the monthly routine reads each month-end NAV, in order of preference.
+# The routine stops at the first source that gives a value dated on the month's last
+# NAV date (within 7 days of the month end). If none does, it writes nothing, logs the
+# failure in private-data/log/ and alerts the owner.
+#
+# Source kinds:
+#   official_file    manager's downloadable NAV history (daily)
+#   official_page    manager's fund page (latest NAV with date)
+#   factsheet        manager's monthly factsheet (month-end NAV or monthly return), published ~5-15 days after month end
+#   factsheet_mirror the manager's own factsheet hosted by a distributor (Finanzfluss, ING, Allfunds...)
+#   crosscheck       third-party page used only to cross-check the amount, never as the source of the date
+#   manual           the owner drops the PDF in data/factsheets/ or runs `jocari.cli add-nav`
+#   myinvestor       DISABLED until MyInvestor confirms automated use through the connector
+
+defaults:
+  crosscheck: finect          # fund pages only; /doclegal and /document are disallowed by robots.txt
+  crosscheck_tolerance_pct: 0.05
+  myinvestor: disabled
+
+instruments:
+  LU0034353002:  # DWS Floating Rate Notes LC
+    - factsheet: https://download.dws.com/product-documents/LU0034353002/Factsheet/ES/ES
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/LU0034353002-factsheet.pdf
+  FR0013506995:  # Lazard Euro Short Duration Income Opp. SRI RVC EUR
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/FR0013506995-factsheet.pdf
+    - manual: true            # lazardfreresgestion.fr did not respond to automated requests
+  IE00BFZMJT78:  # Neuberger Short Duration Euro Bond EUR I Acc
+    - manual: true            # nb.com returns 429 to automated requests
+  ES0112618006:  # B&H Deuda
+    - official_file: https://www.buyandhold.es/ftpdata/files/VL%20BH%20DEUDA%20FI.pdf
+    - official_page: https://www.buyandhold.es/bh-deuda-fi/
+  LU2200514128:  # Pareto Nordic Cross Credit R EUR
+    - factsheet: https://paretoam.com/uploads/Monthly-reports/English-reports/Pareto_Nordic_Cross_Credit_R-EUR-MR-en.pdf
+  LU1623762843:  # Carmignac Portfolio Credit A EUR Acc
+    - factsheet: https://www.carmignac.com/assets/yoda/FLFPRO_CCR_LU1623762843_AT_de/Monthly-Factsheet-PRO_Carmignac-Portfolio-Credit-A-EUR-Acc_LU1623762843_AT_de.pdf
+  IE000VA5W9H0:  # Man Global IG Opportunities I H EUR Acc
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/IE000VA5W9H0-factsheet.pdf
+  ES0140794001:  # Gamma Global A
+    - manual: true            # singularam.es NAV history sits behind reCAPTCHA
+  LU1694789535:  # DNCA Invest Alpha Bonds B EUR
+    - official_page: https://www.dnca-investments.com/fonds/dnca-invest-alpha-bonds/parts/b-lu1694789535
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/LU1694789535-factsheet.pdf
+  LU1112771503:  # Helium Selection B-EUR
+    - official_page: https://www.syquant-capital.fr/fund/helium-selection/lu1112771503/
+    - factsheet: https://www.syquant-capital.fr/wp-content/themes/syquant/docs/factsheets/factsheet-fr-LU1112771503.pdf
+  IE000N9XFSD0:  # Fermat UCITS Cat Bond Institutional EUR Acc (weekly NAV)
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/IE000N9XFSD0-factsheet.pdf
+  IE00BLP5S460:  # Jupiter Merian Global Equity Abs. Return L EUR Hedged Acc
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/IE00BLP5S460-factsheet.pdf
+  LU1593227850:  # BlackRock Systematic Asia Pacific Eq. Abs. Return D2 EUR Hedged
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/LU1593227850-factsheet.pdf
+    - manual: true            # blackrock.com returns 403 to automated requests
+  IE00BYX5NX33:  # Fidelity MSCI World Index P-ACC-EUR
+    - manual: true            # fidelityinternational.com returns 403; official ret.en.gb.IE00BYX5NX33.pdf
+  ES0124037005:  # Cobas Selección C
+    - official_file: https://cobas-static-content.s3.eu-west-1.amazonaws.com/documentos/cobas/Documentos+web+publica+Yuri+-+ENG/Fondos+de+inversion/Cobas+Seleccion/Clase+C/seleccion-diario.xlsx
+  ES0112611001:  # Azvalor Internacional
+    - official_file: https://docs.google.com/spreadsheets/d/1ohap4wGhOjwpjc3XMiApaavpw4S16VCJ0TYa3ZHTNAQ/export?format=xlsx
+    - official_page: https://www.azvalor.com/fondos-de-inversion/azvalor-internacional/
+  LU0329355670:  # Robeco QI Emerging Markets Active Equities D EUR
+    - factsheet: https://www.robeco.com/files/doca/CGF_EM13030D-fact-{yyyymm}-profgloben.pdf
+  LU1213836080:  # Fidelity Global Technology A-Acc-EUR
+    - manual: true            # fidelityinternational.com returns 403; official mf.es.xx.LU1213836080.pdf
+
+benchmarks:
+  IE00B6R52259:  # iShares MSCI ACWI (Acc) — NAV in USD, converted with ECB EUR/USD
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/IE00B6R52259-factsheet.pdf
+    - fx: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=csvdata
+  IE00B3VTMJ91:  # iShares EUR Govt Bond 1-3yr (Acc)
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/IE00B3VTMJ91-factsheet.pdf
+  IE00BH04FZ00:  # Vanguard EUR Corporate 1-3 Year (Acc)
+    - factsheet_mirror: https://assets.finanzfluss.de/hippoverse/documents/IE00BH04FZ00-factsheet.pdf
+    - manual: true            # fund-docs.vanguard.com returns 403

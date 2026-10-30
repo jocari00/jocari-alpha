@@ -10,3 +10,6 @@ dist/
 
 # Third-party documents (factsheets): manager copyright, never published
 data/factsheets/
+
+# Raw NAVs and third-party figures: separate private repository
+private-data/

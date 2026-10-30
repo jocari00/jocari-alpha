@@ -1,6 +1,12 @@
-"""NAV storage (one CSV per ISIN in data/nav/) and validation of new observations.
+"""NAV storage (one CSV per ISIN in private-data/nav/) and validation of new observations.
 
-CSV columns: date, nav, source, retrieved_at, note
+private-data/ is a separate private repository: raw NAVs are third-party data and are
+never published. Only combined portfolio returns derived from them are.
+
+CSV columns: date, nav, basis, source, retrieved_at, note
+- `basis` is `nav` (a published NAV) or `index` (a value backed out from returns,
+  base 100 at the anchor, used when the document states no NAV). Only ratios within
+  a series are ever used, so both work; a series must not mix them.
 - `source` is the URL or document the NAV was read from, or `manual`.
 - Rows are append-only in date order. A correction is a deliberate edit of an
   existing row, done in its own commit with the reason in the message.
@@ -16,7 +22,7 @@ import pandas as pd
 
 from .config import ROOT
 
-FIELDS = ["date", "nav", "source", "retrieved_at", "note"]
+FIELDS = ["date", "nav", "basis", "source", "retrieved_at", "note"]
 # Daily moves above these thresholds are rejected unless explicitly confirmed.
 MAX_DAILY_MOVE = {"fixed_income": 0.03, "equity": 0.08}
 
@@ -28,17 +34,21 @@ class Observation:
     nav: float
     source: str
     note: str = ""
+    basis: str = "nav"
 
 
 class ValidationError(ValueError):
     pass
 
 
-def nav_path(isin: str, root: Path = ROOT) -> Path:
-    return root / "data" / "nav" / f"{isin}.csv"
+DATA_ROOT = ROOT / "private-data"
 
 
-def read_nav(isin: str, root: Path = ROOT) -> pd.Series:
+def nav_path(isin: str, root: Path = DATA_ROOT) -> Path:
+    return root / "nav" / f"{isin}.csv"
+
+
+def read_nav(isin: str, root: Path = DATA_ROOT) -> pd.Series:
     p = nav_path(isin, root)
     if not p.exists():
         return pd.Series(dtype=float, name=isin)
@@ -69,7 +79,7 @@ def validate(obs: Observation, history: pd.Series, asset_class: str, today: date
                 "check the source and re-run with confirmation if it is real")
 
 
-def append(obs: Observation, root: Path = ROOT) -> None:
+def append(obs: Observation, root: Path = DATA_ROOT) -> None:
     p = nav_path(obs.isin, root)
     p.parent.mkdir(parents=True, exist_ok=True)
     new = not p.exists()
@@ -78,15 +88,15 @@ def append(obs: Observation, root: Path = ROOT) -> None:
         if new:
             w.writeheader()
         w.writerow({
-            "date": obs.date.isoformat(), "nav": repr(obs.nav), "source": obs.source,
+            "date": obs.date.isoformat(), "nav": repr(obs.nav), "basis": obs.basis, "source": obs.source,
             "retrieved_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "note": obs.note,
         })
 
 
-def log_failure(isin: str, message: str, root: Path = ROOT) -> None:
+def log_failure(isin: str, message: str, root: Path = DATA_ROOT) -> None:
     """Record a failed fetch/validation. The last stored NAV is kept; nothing is invented."""
-    p = root / "data" / "log" / "ingestion_failures.csv"
+    p = root / "log" / "ingestion_failures.csv"
     p.parent.mkdir(parents=True, exist_ok=True)
     new = not p.exists()
     with open(p, "a", newline="", encoding="utf-8") as f:

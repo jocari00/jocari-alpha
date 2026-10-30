@@ -1,9 +1,11 @@
-"""Portfolio simulation: aligned NAVs + decisions -> daily portfolio value.
+"""Portfolio simulation: aligned NAVs + decisions -> portfolio value on each date.
 
 Conventions (documented on the Methodology page):
-- All series are aligned to the TARGET2 business-day calendar. A NAV missing on a
-  calendar day (local holiday, weekly NAV) is carried forward from the last
-  published value. Nothing is ever interpolated.
+- Valuation dates are month ends. Each instrument takes its last NAV published
+  within `max_gap_days` before the date (covers holidays, valuation holidays and
+  Fermat's weekly NAV). If there is none, the value is missing: nothing is carried
+  forward over a gap and nothing is interpolated. A portfolio is only valued on
+  dates where every holding has a value (see complete_dates).
 - Base date: the initial decision's effective date (2025-12-31). Each fund's base
   NAV is its last NAV published on or before that date. Value = 100 at base.
 - Buy and hold: units are fixed after each decision, so weights drift with the market.
@@ -24,21 +26,32 @@ class DataError(ValueError):
     pass
 
 
-def align(navs: dict[str, pd.Series], calendar: pd.DatetimeIndex) -> pd.DataFrame:
-    """Align raw NAV series (DatetimeIndex -> NAV) to the calendar, carrying values forward.
+MAX_GAP_DAYS = 7
 
-    Values published before the first calendar day are used only to seed the base.
-    Raises DataError if an instrument has no NAV on or before the first calendar day.
+
+def align(navs: dict[str, pd.Series], calendar: pd.DatetimeIndex,
+          max_gap_days: int = MAX_GAP_DAYS) -> pd.DataFrame:
+    """Value of each series on each calendar date: its last NAV within max_gap_days, else NaN.
+
+    Raises DataError if an instrument has no NAV for the first calendar date (the base).
     """
     cols = {}
     for isin, s in navs.items():
         s = s.sort_index()
         s = s[~s.index.duplicated(keep="last")]
-        if s.empty or s.index[0] > calendar[0]:
-            raise DataError(f"{isin}: no NAV on or before base date {calendar[0].date()}")
-        full = s.reindex(s.index.union(calendar)).ffill()
-        cols[isin] = full.reindex(calendar)
+        vals = []
+        for t in calendar:
+            prior = s[(s.index <= t) & (s.index > t - pd.Timedelta(days=max_gap_days + 1))]
+            vals.append(prior.iloc[-1] if not prior.empty else float("nan"))
+        cols[isin] = vals
+        if pd.isna(vals[0]):
+            raise DataError(f"{isin}: no NAV within {max_gap_days} days of base date {calendar[0].date()}")
     return pd.DataFrame(cols, index=calendar)
+
+
+def complete_dates(nav: pd.DataFrame, isins) -> pd.DatetimeIndex:
+    """Dates on which every listed instrument has a value."""
+    return nav.index[nav[list(isins)].notna().all(axis=1)]
 
 
 def _exec_date(calendar: pd.DatetimeIndex, d: pd.Timestamp, lag: int) -> pd.Timestamp | None:

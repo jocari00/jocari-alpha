@@ -90,3 +90,20 @@ def test_rebalance_requires_trade_lag():
                  Decision(date(2026, 1, 2), "rebalance", {"A": 50, "B": 50})]
     with pytest.raises(DataError):
         simulate(decisions, nav, _ins(None))
+
+
+def test_align_leaves_gaps_missing_instead_of_carrying_forward():
+    ends = pd.DatetimeIndex(["2025-12-31", "2026-01-30", "2026-02-27", "2026-03-31"])
+    s = pd.Series([10.0, 11.0], index=pd.to_datetime(["2025-12-31", "2026-03-27"]))  # Mar 27 within 7d of Mar 31
+    out = align({"A": s}, ends)
+    assert out["A"].iloc[0] == 10.0
+    assert out["A"].iloc[1:3].isna().all()
+    assert out["A"].iloc[3] == 11.0
+
+
+def test_complete_dates_requires_every_holding():
+    from jocari.engine import complete_dates
+    ends = pd.DatetimeIndex(["2025-12-31", "2026-01-30", "2026-02-27"])
+    nav = pd.DataFrame({"A": [1.0, 1.1, 1.2], "B": [2.0, float("nan"), 2.2]}, index=ends)
+    assert list(complete_dates(nav, ["A", "B"])) == [ends[0], ends[2]]
+    assert list(complete_dates(nav, ["A"])) == list(ends)
