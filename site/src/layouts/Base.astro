@@ -30,7 +30,7 @@ const current = path.split("/")[0] + (path ? "/" : "");
   <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}favicon.svg`} type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Franklin:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600&display=swap" />
   <script is:inline>
     try {
       const q = new URLSearchParams(location.search).get("theme");
@@ -113,7 +113,7 @@ const current = path.split("/")[0] + (path ? "/" : "");
     --pos: #1c7440; --neg: #b3362b;
     --font: "Libre Franklin", "Franklin Gothic", "Helvetica Neue", Arial, sans-serif;
     --serif: var(--font);
-    --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --mono: var(--font); /* no monospace: labels and dates use the same family */
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -155,8 +155,8 @@ const current = path.split("/")[0] + (path ? "/" : "");
   h3 { font-size: 1rem; font-weight: 500; line-height: 1.35; margin: 0 0 0.4rem; }
   p { margin: 0 0 1rem; }
   .muted { color: var(--muted); font-size: 0.875rem; }
-  .mono { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0; }
-  .label { font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase;
+  .mono { font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+  .label { font-family: var(--font); font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
            color: var(--muted); margin: 0 0 0.75rem; }
   .skip { position: absolute; left: -9999px; }
   .skip:focus { left: 16px; top: 8px; background: var(--surface); padding: 8px; z-index: 10; }
@@ -207,7 +207,7 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .rows > li { border-bottom: 1px solid var(--line); }
   table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
   th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); }
-  th { font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  th { font-family: var(--font); font-size: 11px; font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
   td.num, th.num { text-align: right; }
   .table-scroll { overflow-x: auto; }
   .pos { color: var(--pos); } .neg { color: var(--neg); }
@@ -216,7 +216,7 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .prose h2 { font-size: 1.5rem; margin: 2.75rem 0 0.75rem; }
   .prose li { margin-bottom: 0.45rem; }
   .prose table { margin: 1rem 0 1.5rem; }
-  .tag { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  .tag { display: inline-block; font-family: var(--font); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
          padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
   .figure { font-variant-numeric: tabular-nums lining-nums; }
   .btn-primary { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 4px;

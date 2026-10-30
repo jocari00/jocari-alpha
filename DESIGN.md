@@ -21,8 +21,9 @@ dataviz script and must not be swapped for the UI accent.
 ## Type
 - **Sans:** Libre Franklin. Hero figure 300, 56–64px *(est.)*, tracking −0.02em; headings 300;
   names 500, 15–16px; body 400, 15–16px / 1.6.
-- **Mono:** DM Mono 400 for dates, ISINs, account-style codes, statuses and labels; 12–13px.
-- **Labels:** mono, UPPERCASE, 11px, tracking +0.12em, muted colour *(est.)*.
+- **No monospace** (the owner found DM Mono labels "AI-looking"): dates, codes and statuses use Libre
+  Franklin with tabular figures.
+- **Labels:** Libre Franklin 500, UPPERCASE, 11px, tracking +0.05em, muted colour.
 - Figures: tabular, right-aligned in lists; typographic minus (−).
 
 ## Layout

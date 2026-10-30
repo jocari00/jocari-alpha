@@ -92,12 +92,12 @@ const kicker = lang === "en"
   .stats { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 56px; margin: 2rem 0 2.5rem; }
   .hero-num { font-size: clamp(3rem, 8vw, 4rem); line-height: 1; font-weight: 300; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
   dl { display: flex; flex-wrap: wrap; gap: 12px 40px; margin: 0 0 6px; }
-  dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  dt { font-family: var(--font); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
   dd { margin: 0; font-size: 1.15rem; color: var(--ink); font-variant-numeric: tabular-nums; }
   .chart-empty { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 28px 24px; margin: 0 0 1rem;
                  min-height: 220px; display: flex; flex-direction: column; justify-content: center; }
   .chart-empty p { max-width: 62ch; color: var(--text-2); margin: 0; }
-  .chart-empty .ce-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+  .chart-empty .ce-title { font-family: var(--font); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
   .two { display: grid; gap: 0 64px; }
   @media (min-width: 900px) { .two { grid-template-columns: 1.7fr 1fr; } }
   .bench { list-style: none; padding: 0; margin: 0 0 1rem; border-top: 1px solid var(--line); }
@@ -108,5 +108,5 @@ const kicker = lang === "en"
   .pager a { display: flex; flex-direction: column; text-decoration: none; font-size: 1.25rem; font-weight: 300; color: var(--ink); }
   .pager a:hover { color: var(--accent-ink); }
   .pager .nx { text-align: right; }
-  .pager .muted { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .pager .muted { font-family: var(--font); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
 </style>
