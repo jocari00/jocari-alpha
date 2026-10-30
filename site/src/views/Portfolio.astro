@@ -31,7 +31,7 @@ const kicker = lang === "en"
   ? `Model portfolio with ${p.equity}% equity and ${p.fixedIncome}% fixed income`
   : `Cartera modelo con un ${p.equity} % de renta variable y un ${p.fixedIncome} % de renta fija`;
 ---
-<Base lang={lang} title={p.name} path={`portfolios/${id}/`} kicker={kicker} heading={p.name}>
+<Base lang={lang} title={p.name} path={`portfolios/${id}/`} heading={p.name} lede={kicker}>
   {ytd && (
     <div slot="head" class="stats">
       <p class="hero-num">{pct(lang, ytd.p)}</p>
