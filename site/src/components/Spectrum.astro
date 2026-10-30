@@ -3,6 +3,7 @@
 // 100%, each with its year-to-date return against its benchmark. Columns on wide screens,
 // rows on phones. The bars grow once on load (skipped with prefers-reduced-motion).
 import { T, href, pct } from "../lib/i18n.js";
+import { getEditorial } from "../lib/content.js";
 interface Props { lang: "en" | "es"; portfolios: any[]; results: any }
 const { lang, portfolios, results } = Astro.props;
 const t = T[lang];
@@ -16,6 +17,7 @@ const rows = portfolios.map((p) => {
   const pr = r.portfolio[n - 1] / r.portfolio[i] - 1, br = r.benchmark[n - 1] / r.benchmark[i] - 1;
   return { ...p, valued: true, pr, br, x: pr - br };
 });
+const profiles = getEditorial(lang).profiles ?? {};
 const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta variable`;
 ---
 <ol class="spectrum" aria-label={t.ladder}>
@@ -28,13 +30,20 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
           {p.fixedIncome > 0 && <span class="fi" style={`flex:${p.fixedIncome}`}></span>}
           {p.equity > 0 && <span class="eq" style={`flex:${p.equity}`}></span>}
         </span>
-        {p.valued ? (
+        {profiles[p.id] && (
+          <span class="about">
+            <span class="obj">{profiles[p.id].objective}</span>
+            <span class="desc">{profiles[p.id].description}</span>
+          </span>
+        )}
+        {p.valued && (
           <span class="nums">
+            <span class="label ylabel">{lang === "en" ? "Year to date" : "En el año"}</span>
             <span class="ytd">{pct(lang, p.pr)}</span>
             <span class="bm">{t.benchmark} {pct(lang, p.br)}</span>
             <span class="dx">{t.difference} <span class={sign(p.x)}>{pct(lang, p.x)}</span></span>
           </span>
-        ) : <span class="nums wait">{t.notValued}</span>}
+        )}
       </a>
     </li>
   ))}
@@ -42,7 +51,7 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
 <p class="key">
   <span><i class="k-eq"></i>{t.equity}</span>
   <span><i class="k-fi"></i>{t.fixedIncome}</span>
-  <span>{lang === "en" ? "Figures are year to date." : "Cifras en lo que va de año."}</span>
+  
 </p>
 
 <style>
@@ -57,12 +66,15 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
   .fi { background: var(--fi); border-radius: 3px 3px 0 0; }
   .eq { background: var(--series-1); border-radius: 3px 3px 0 0; }
   .fi + .eq { border-radius: 0; }
+  .about { display: flex; flex-direction: column; gap: 8px; padding-left: 12px; border-left: 2px solid var(--line); margin-bottom: 18px; }
+  .obj { font-weight: 500; font-size: 0.9rem; line-height: 1.45; color: var(--ink); }
+  .desc { font-size: 0.85rem; line-height: 1.5; color: var(--text-2); }
   .nums { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
+  .ylabel { margin: 0 0 2px; }
   .ytd { font-size: 1.7rem; line-height: 1.2; color: var(--ink); font-weight: 300; letter-spacing: -0.02em; }
   .bm { font-size: 0.85rem; color: var(--text-2); }
   .bm, .dx { font-variant-numeric: tabular-nums; }
   .dx { font-size: 0.85rem; color: var(--text-2); }
-  .wait { font-size: 0.85rem; color: var(--muted); }
   .key { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 14px; font-size: 0.82rem; color: var(--muted); }
   .key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; vertical-align: -1px; }
   .k-eq { background: var(--series-1); } .k-fi { background: var(--fi); }
@@ -77,11 +89,12 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
   @media (max-width: 720px) {
     .spectrum { grid-template-columns: 1fr; }
     .spectrum li + li { border-left: 0; border-top: 1px solid var(--line); }
-    .spectrum a { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name nums" "mix nums" "col col";
+    .spectrum a { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name nums" "mix nums" "col col" "about about";
                   gap: 0 16px; padding: 16px 0; }
     .name { grid-area: name; } .mix { grid-area: mix; margin-bottom: 10px; }
     .nums { grid-area: nums; align-items: flex-end; text-align: right; }
-    .col { grid-area: col; flex-direction: row-reverse; height: 8px; margin: 0; }
+    .col { grid-area: col; flex-direction: row-reverse; height: 8px; margin: 0 0 14px; }
+    .about { grid-area: about; margin: 0; }
     .fi, .eq, .fi + .eq { border-radius: 2px; }
     .ytd { font-size: 1.3rem; }
     @media (prefers-reduced-motion: no-preference) {

@@ -41,4 +41,22 @@ funds:
   ES0112611001: ""   # Azvalor Internacional
   LU0329355670: ""   # Robeco QI Emerging Markets Active Equities
   LU1213836080: ""   # Fidelity Global Technology
+# Fichas de perfil de la portada (BORRADOR para revisar): un objetivo y una descripción breve por
+# cartera. Describe la cartera, nunca a quién va dirigida, y sin cifras de rentabilidad.
+profiles:
+  defensive:
+    objective: "Preservar el capital y aspirar a superar la liquidez en un ciclo completo."
+    description: "Solo renta fija a corto plazo, crédito y alternativos defensivos. Pensada para oscilaciones pequeñas, sin renta variable."
+  conservative:
+    objective: "Aspirar a superar la inflación a largo plazo con oscilaciones contenidas."
+    description: "Mayoría de renta fija a corto plazo, con una cuarta parte en renta variable y fondos de retorno absoluto para aportar crecimiento."
+  balanced:
+    objective: "Aspirar al crecimiento a largo plazo con un colchón de renta fija que suavice las caídas."
+    description: "Mitad renta variable, mitad renta fija a corto plazo y alternativos defensivos."
+  dynamic:
+    objective: "Aspirar al crecimiento del capital a largo plazo, aceptando oscilaciones mayores."
+    description: "Tres cuartas partes en renta variable global, value y emergente; una cuarta parte en renta fija como contrapeso."
+  aggressive:
+    objective: "Aspirar al mayor crecimiento a largo plazo de las cinco; las caídas temporales profundas forman parte del camino."
+    description: "Toda en renta variable, incluida tecnología y fondos de retorno absoluto, sin renta fija."
 ---

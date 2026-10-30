@@ -41,4 +41,22 @@ funds:
   ES0112611001: ""   # Azvalor Internacional
   LU0329355670: ""   # Robeco QI Emerging Markets Active Equities
   LU1213836080: ""   # Fidelity Global Technology
+# Profile cards on the home page (DRAFT to review): an objective and a short description per
+# portfolio. Describe the portfolio itself, never who it is for, and avoid return figures.
+profiles:
+  defensive:
+    objective: "Preserve capital and aim to beat cash over a full cycle."
+    description: "Short-dated bonds, credit and defensive alternatives only. Built to keep swings small, with no equity."
+  conservative:
+    objective: "Aim to outpace inflation over the long term with limited swings."
+    description: "Mostly short-dated fixed income, with a quarter in equity and absolute-return funds to add growth."
+  balanced:
+    objective: "Aim for long-term growth with a fixed-income cushion that softens falls."
+    description: "Half equity, half short-dated fixed income and defensive alternatives."
+  dynamic:
+    objective: "Aim for long-term capital growth, accepting larger swings along the way."
+    description: "Three quarters in global, value and emerging-market equity; a quarter in fixed income as ballast."
+  aggressive:
+    objective: "Aim for the highest long-term growth of the five; deep temporary falls are part of it."
+    description: "All equity, including technology and absolute-return funds, with no fixed income."
 ---
