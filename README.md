@@ -1,4 +1,4 @@
-# Jocari Portfolios
+# Jocari Alpha
 
 *Model portfolios & market commentary.*
 

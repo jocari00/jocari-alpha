@@ -1,1 +1,1 @@
-"""Jocari Portfolios: data pipeline and calculation engine."""
+"""Jocari Alpha: data pipeline and calculation engine."""
