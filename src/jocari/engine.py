@@ -8,9 +8,15 @@ Conventions (documented on the Methodology page):
   dates where every holding has a value (see complete_dates).
 - Base date: the initial decision's effective date (2025-12-31). Each fund's base
   NAV is its last NAV published on or before that date. Value = 100 at base.
-- Buy and hold: units are fixed after each decision, so weights drift with the market.
+- Valuation dates: the base, the live start (2026-10-30) and every month end after
+  it. The first period (base -> live start) is the estimated YTD; later periods are live.
+- Constant weights (the methodology in use, see constant_weights): at every valuation
+  date the portfolio is reset to its target weights, so a period's return is the
+  weighted average of the funds' returns over that period. No drift.
 - No external cash flows, so the time-weighted return equals the value ratio.
-- A later decision (rebalance) is turned into an order per fund, sized with the
+- simulate() (buy and hold with lagged trades) is kept for a possible future switch
+  of methodology; it is not used for the published figures.
+- In simulate(), a later decision (rebalance) is turned into an order per fund, sized with the
   portfolio value on the effective date D, and executed at the NAV of D + the fund's
   trade_lag_days. Cash between a sale and a purchase earns 0% (cash may be briefly
   negative if a purchase settles before a sale; also at 0%).
@@ -52,6 +58,29 @@ def align(navs: dict[str, pd.Series], calendar: pd.DatetimeIndex,
 def complete_dates(nav: pd.DataFrame, isins) -> pd.DatetimeIndex:
     """Dates on which every listed instrument has a value."""
     return nav.index[nav[list(isins)].notna().all(axis=1)]
+
+
+def constant_weights(decisions: list[Decision], nav: pd.DataFrame, base_value: float = 100.0
+                     ) -> pd.Series:
+    """Portfolio value on each date of `nav`, resetting to target weights at every date.
+
+    The weights for the period (t-1, t] are those of the latest decision effective on
+    or before t-1. Every holding must have a value on every date (use complete_dates).
+    """
+    if not decisions:
+        raise ValueError("no decisions")
+    decisions = sorted(decisions, key=lambda d: d.effective_date)
+    if pd.Timestamp(decisions[0].effective_date) != nav.index[0]:
+        raise ValueError(f"first date must be the initial decision date {decisions[0].effective_date}")
+    values = [base_value]
+    for prev, t in zip(nav.index[:-1], nav.index[1:]):
+        w = [d for d in decisions if pd.Timestamp(d.effective_date) <= prev][-1].weights
+        missing = [i for i in w if pd.isna(nav.at[prev, i]) or pd.isna(nav.at[t, i])]
+        if missing:
+            raise DataError(f"no NAV for {missing} on {prev.date()} or {t.date()}")
+        r = sum(wt / 100 * (nav.at[t, i] / nav.at[prev, i] - 1) for i, wt in w.items())
+        values.append(values[-1] * (1 + r))
+    return pd.Series(values, index=nav.index, name="value")
 
 
 def _exec_date(calendar: pd.DatetimeIndex, d: pd.Timestamp, lag: int) -> pd.Timestamp | None:

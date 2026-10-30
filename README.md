@@ -22,10 +22,18 @@ src/jocari/       Python: rules, NAV store and validation, simulation engine, me
 tests/            pytest: construction rules and engine checks against hand-computed cases
 ```
 
-Daily flow:
+Tracking model (`config/tracking.yaml`): weights are held constant (reset to target at every
+valuation date). The period from 2025-12-31 to the live start (2026-10-30) is shown as a single
+**estimated YTD** segment; from then on the portfolios are valued at every month end.
 
-1. **NAV collection** (scheduled Claude routine): reads each NAV from its official source,
-   validates it, appends it to `data/nav/<ISIN>.csv` and commits.
+Raw NAVs are third-party data and live in `private-data/`, a separate private repository.
+Only combined portfolio and benchmark returns are published.
+
+Monthly flow:
+
+1. **NAV collection** (scheduled Claude routine): reads each month-end NAV following the source
+   chain in `config/sources.yaml`, validates it, appends it to `private-data/nav/<ISIN>.csv`
+   and commits to the private repository.
 2. **Calculation and deployment** (GitHub Actions): runs the tests, computes the portfolios
    and metrics, writes the JSON consumed by the website and deploys to GitHub Pages.
 

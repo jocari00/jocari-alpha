@@ -1,6 +1,7 @@
 # Defensive — target weights (% of portfolio).
 # Each decision is committed BEFORE its effective date (except the initial one, see below).
-# To rebalance or change weights, append a new entry with a later effective_date.
+# Weights are static: the portfolio is reset to these targets at every valuation date.
+# To change the targets, append a new entry with a later effective_date.
 portfolio: defensive
 name: Defensive
 equity_target: 0
@@ -13,8 +14,9 @@ decisions:
   - effective_date: 2025-12-31
     kind: initial
     note: >-
-      Initial allocation, defined in October 2026. The period from the base date
-      to the first commit is reconstructed with these weights (buy and hold).
+      Initial allocation, formalised in October 2026. Weights are held constant (reset to
+      target at every valuation date). 2025-12-31 to 2026-10-30 is an estimated YTD with
+      these weights; live monthly tracking starts on 2026-10-30.
     weights:
       LU0034353002: 20     # DWS Floating Rate Notes
       FR0013506995: 10     # Lazard Euro Short Duration Income Opp. SRI

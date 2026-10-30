@@ -1,0 +1,12 @@
+# Tracking model (documented on the Methodology page).
+base_date: 2025-12-31        # value 100
+live_start: 2026-10-30       # first commit; last business day of October 2026
+weights: constant            # reset to target at every valuation date (no drift)
+valuation: month_end         # after live_start: last NAV within 7 days of each month end
+past_period:
+  label: "Estimated YTD"     # 2025-12-31 -> live_start, one period, same weights
+  shown_as: single_segment   # dashed line from 100 to the live-start value
+commentary:
+  past: quarterly            # Q1, Q2, Q3 2026, each showing its real writing date
+  live: monthly              # from October 2026 onward, with the auto-filled returns block
+  sections: [portfolio, block, fund]

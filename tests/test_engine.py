@@ -107,3 +107,30 @@ def test_complete_dates_requires_every_holding():
     nav = pd.DataFrame({"A": [1.0, 1.1, 1.2], "B": [2.0, float("nan"), 2.2]}, index=ends)
     assert list(complete_dates(nav, ["A", "B"])) == [ends[0], ends[2]]
     assert list(complete_dates(nav, ["A"])) == list(ends)
+
+
+def test_constant_weights_resets_every_period():
+    # A: 10 -> 11 -> 11 ; B: 20 -> 20 -> 22 ; 50/50 reset each period.
+    # Period 1: 0.5*10% + 0.5*0% = 5%  -> 105
+    # Period 2: 0.5*0% + 0.5*10% = 5%  -> 110.25 (buy and hold would give 110: 5.5*... see drift test)
+    from jocari.engine import constant_weights
+    nav = _nav(A=[10.0, 11.0, 11.0], B=[20.0, 20.0, 22.0])
+    v = constant_weights([Decision(date(2025, 12, 31), "initial", {"A": 50, "B": 50})], nav)
+    assert list(v) == pytest.approx([100, 105, 110.25])
+
+
+def test_constant_weights_applies_new_decision_from_its_date():
+    from jocari.engine import constant_weights
+    nav = _nav(A=[10.0, 11.0, 12.1], B=[20.0, 20.0, 20.0])
+    decisions = [Decision(date(2025, 12, 31), "initial", {"A": 100}),
+                 Decision(date(2026, 1, 2), "change", {"B": 100})]
+    v = constant_weights(decisions, nav)
+    # Period 1 all in A (+10%), period 2 all in B (0%)
+    assert list(v) == pytest.approx([100, 110, 110])
+
+
+def test_constant_weights_refuses_missing_nav():
+    from jocari.engine import constant_weights
+    nav = _nav(A=[10.0, float("nan"), 11.0])
+    with pytest.raises(DataError):
+        constant_weights([Decision(date(2025, 12, 31), "initial", {"A": 100})], nav)
