@@ -27,8 +27,9 @@ dataviz script and must not be swapped for the UI accent.
 
 ## Layout
 - Max width 1200px *(est.)*; side gutter 16px (phone) / 40px (desktop).
-- Order: thin meta strip → header with tabs → one hero figure → full-width chart → 2–3 equal
-  columns of lists.
+- Order: header (logo + tabs) → one hero figure → full-width chart → 2–3 equal columns of lists.
+- Logo: J and α joined by one top bar, in a 5px-radius seal (accent tile, on-accent strokes);
+  `site/src/components/Logo.astro`, also the favicon.
 - Lists, not cards: rows separated by 1px hairlines; name left, figure right, detail in mono
   muted below. Row height ≈ 52px *(est.)*.
 - Chart: annotated (leader line + label for meaningful events), recessive grid, period selector

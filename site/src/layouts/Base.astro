@@ -1,6 +1,7 @@
 ---
-import { T, href, fmtDate } from "../lib/i18n.js";
+import { T, href } from "../lib/i18n.js";
 import { loadResults } from "../lib/data.js";
+import Logo from "../components/Logo.astro";
 
 interface Props {
   lang: "en" | "es"; title?: string; description?: string; path?: string;
@@ -10,13 +11,7 @@ const { lang, title, description, path = "", kicker, heading, lede } = Astro.pro
 const t = T[lang];
 const other = lang === "en" ? "es" : "en";
 const pageTitle = title ? `${title} | Jocari Alpha` : `Jocari Alpha | ${t.tagline}`;
-const results = loadResults();
-const { pending } = results;
-const lastDates = Object.values(results.portfolios as Record<string, any>).map((r) => r.dates?.[r.dates.length - 1]).filter(Boolean).sort();
-const asOf = lastDates[lastDates.length - 1];
-const status = pending
-  ? (lang === "en" ? `Tracking starts ${fmtDate(lang, results.live_start)}` : `Seguimiento desde ${fmtDate(lang, results.live_start)}`)
-  : (lang === "en" ? `Data as of ${fmtDate(lang, asOf)}` : `Datos a ${fmtDate(lang, asOf)}`);
+const { pending } = loadResults();
 const nav = [
   ["portfolios/", t.nav.portfolios], ["commentary/", t.nav.commentary],
   ["methodology/", t.nav.methodology], ["about/", t.nav.about],
@@ -46,17 +41,9 @@ const current = path.split("/")[0] + (path ? "/" : "");
 </head>
 <body>
   <a class="skip" href="#main">{lang === "en" ? "Skip to content" : "Ir al contenido"}</a>
-  <div class="meta-strip">
-    <div class="wrap strip">
-      <span>Jocari Alpha</span><span class="sep" aria-hidden="true">/</span>
-      <span>{lang === "en" ? "Model portfolios, EUR" : "Carteras modelo, EUR"}</span><span class="sep" aria-hidden="true">/</span>
-      <span>{status}</span>
-      <span class="strip-right">{lang === "en" ? "Updated monthly" : "Actualización mensual"}</span>
-    </div>
-  </div>
   <header class="topbar">
     <div class="wrap bar">
-      <a class="brand" href={href(lang)}>Jocari Alpha</a>
+      <a class="brand" href={href(lang)}><Logo size={30} /><span>Jocari Alpha</span></a>
       <nav aria-label={lang === "en" ? "Main" : "Principal"}>
         <ul>
           {nav.map(([p, label]) => (
@@ -88,7 +75,7 @@ const current = path.split("/")[0] + (path ? "/" : "");
 
   <footer class="site-footer">
     <div class="wrap footer-grid">
-      <p class="foot-brand">Jocari Alpha<br /><span>{t.tagline}</span></p>
+      <div class="foot-brand"><Logo size={26} /><p>Jocari Alpha<br /><span>{t.tagline}</span></p></div>
       <div>
         <p class="legal-note">{t.footer}</p>
         <ul class="foot-links">
@@ -174,18 +161,10 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .skip { position: absolute; left: -9999px; }
   .skip:focus { left: 16px; top: 8px; background: var(--surface); padding: 8px; z-index: 10; }
 
-  /* Meta strip */
-  .meta-strip { border-bottom: 1px solid var(--line); }
-  .strip { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 30px; padding-top: 6px; padding-bottom: 6px;
-           font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-  .strip .sep { color: var(--line); }
-  .strip-right { margin-left: auto; }
-  @media (max-width: 600px) { .strip-right, .strip .sep:nth-of-type(2) { display: none; } }
-
   /* Header with tabs */
   .topbar { border-bottom: 1px solid var(--line); background: var(--bg); }
   .bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 40px; min-height: 64px; }
-  .brand { display: flex; align-items: center; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.015em; color: var(--ink);
+  .brand { display: flex; align-items: center; gap: 11px; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.015em; color: var(--ink);
            text-decoration: none; margin-right: auto; }
   .brand:hover { color: var(--ink); }
   nav { display: flex; }
@@ -217,7 +196,8 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .site-footer { border-top: 1px solid var(--line); padding: 36px 0 52px; font-size: 0.85rem; color: var(--text-2); }
   .footer-grid { display: grid; gap: 24px; }
   @media (min-width: 720px) { .footer-grid { grid-template-columns: 1fr 2.4fr; } }
-  .foot-brand { font-weight: 600; color: var(--ink); }
+  .foot-brand { display: flex; gap: 12px; align-items: flex-start; }
+  .foot-brand p { margin: 0; font-weight: 600; color: var(--ink); }
   .foot-brand span { font-weight: 400; color: var(--muted); }
   .legal-note { max-width: 72ch; }
   .foot-links { display: flex; flex-wrap: wrap; gap: 6px 24px; list-style: none; padding: 0; margin: 0; color: var(--muted); }
