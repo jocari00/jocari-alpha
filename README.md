@@ -16,8 +16,9 @@ No database and no server. Everything lives in this repository, and every change
 ```
 decisions/        One YAML per portfolio: target weights + effective dates (the decision log)
 config/           Instrument master (ISIN, share class, block) and block -> asset class map
-data/nav/         One CSV per ISIN with daily NAVs and the source of each value
-data/log/         Ingestion failures (a failed source never produces an invented value)
+data/factsheets/  Factsheets downloaded by hand (gitignored: manager copyright)
+private-data/     Separate PRIVATE repo: nav/ (one CSV per ISIN, with source), log/ (ingestion
+                  failures; a failed source never produces an invented value), raw/, fx/
 src/jocari/       Python: rules, NAV store and validation, simulation engine, metrics
 tests/            pytest: construction rules and engine checks against hand-computed cases
 ```
