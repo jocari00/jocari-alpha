@@ -84,13 +84,16 @@ export function href(lang, path = "") {
   return base + (lang === "es" ? "es/" : "") + path;
 }
 
+// Typographic minus sign (U+2212) for negative figures.
+const minus = (s) => s.replace("-", "\u2212");
+
 export const pct = (lang, x, signed = true) =>
-  x == null ? "–" : new Intl.NumberFormat(LOCALE[lang], {
+  x == null ? "–" : minus(new Intl.NumberFormat(LOCALE[lang], {
     style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2,
-    signDisplay: signed ? "exceptZero" : "auto" }).format(x);
+    signDisplay: signed ? "exceptZero" : "auto" }).format(x));
 
 export const num = (lang, x, d = 2) =>
-  new Intl.NumberFormat(LOCALE[lang], { minimumFractionDigits: d, maximumFractionDigits: d }).format(x);
+  minus(new Intl.NumberFormat(LOCALE[lang], { minimumFractionDigits: d, maximumFractionDigits: d }).format(x));
 
 export const weight = (lang, w) =>
   new Intl.NumberFormat(LOCALE[lang], { maximumFractionDigits: 1 }).format(w) + " %";

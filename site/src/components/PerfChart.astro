@@ -69,7 +69,7 @@ const summary = last > 0
       autoSize: true,
       handleScale: { mouseWheel: false, pinch: true, axisPressedMouseMove: true },
       handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
-      localization: { locale: d.locale, priceFormatter: (p: number) => nf.format(p) },
+      localization: { locale: d.locale, priceFormatter: (p: number) => nf.format(p).replace("-", "\u2212") },
       timeScale: { borderVisible: false, fixLeftEdge: true, fixRightEdge: true,
                    tickMarkFormatter: (t: any) => mf.format(toDate(t)) },
       rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.15, bottom: 0.1 } },

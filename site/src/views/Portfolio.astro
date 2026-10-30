@@ -34,7 +34,7 @@ const eyebrow = `${lang === "en" ? "Model portfolio" : "Cartera modelo"} · ${p.
     {ytd ? (<>
       <div><span class="k">{t.ytd}{ytd.estimated ? ` · ${t.estimated}` : ""}</span><span class="v figure">{pct(lang, ytd.p)}</span></div>
       <div><span class="k">{t.benchmark}</span><span class="v figure">{pct(lang, ytd.b)}</span></div>
-      <div><span class="k">{t.difference}</span><span class="v figure">{pct(lang, ytd.p - ytd.b)}</span></div>
+      <div><span class="k">{t.difference}</span><span class={`v figure ${sign(ytd.p - ytd.b)}`}>{pct(lang, ytd.p - ytd.b)}</span></div>
       <div><span class="k">{lang === "en" ? "As of" : "A fecha"}</span><span class="v small">{fmtDate(lang, ytd.asof)}</span></div>
     </>) : <p class="pend">{t.notValued}</p>}
   </div>
@@ -83,6 +83,7 @@ const eyebrow = `${lang === "en" ? "Model portfolio" : "Cartera modelo"} · ${p.
   .stats div { display: flex; flex-direction: column; }
   .k { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-navy-2); }
   .v { font-size: clamp(1.7rem, 4vw, 2.4rem); color: var(--on-navy); line-height: 1.2; }
+  .v.pos { color: #8fdcab; } .v.neg { color: #ff9c90; }
   .v.small { font-family: var(--font); font-size: 1rem; margin-top: auto; }
   .pend { color: var(--on-navy-2); margin: 0; }
   .lift { margin-top: -3.5rem; position: relative; z-index: 1; }
