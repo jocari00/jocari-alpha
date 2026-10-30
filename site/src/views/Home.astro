@@ -18,7 +18,6 @@ const en = lang === "en";
                : "Cada una se mide cada mes frente a una combinación pasiva con su mismo peso en renta variable. Las decisiones se registran públicamente antes de entrar en vigor."}>
   <div slot="head" class="cta-row">
     <a class="btn-primary" href={href(lang, "portfolios/")}>{en ? "See the portfolios" : "Ver las carteras"}</a>
-    <a class="btn-quiet" href={href(lang, "methodology/")}>{en ? "How they are measured" : "Cómo se miden"}</a>
   </div>
   <Spectrum lang={lang} portfolios={portfolios} results={results} />
   <p class="muted note">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}
