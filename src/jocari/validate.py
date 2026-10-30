@@ -12,8 +12,10 @@ from datetime import date
 import pandas as pd
 
 # Moves between consecutive observations above these thresholds are rejected unless
-# confirmed. Observations are at most a month apart (weekly or month-end NAVs).
+# confirmed. The check only applies to observations at most MOVE_CHECK_DAYS apart
+# (weekly or month-end NAVs); the base (2025-12-31) to the live start is ten months.
 MAX_MOVE = {"fixed_income": 0.05, "equity": 0.15}
+MOVE_CHECK_DAYS = 35
 
 
 @dataclass
@@ -45,7 +47,8 @@ def validate(obs: Observation, history: pd.Series, asset_class: str, today: date
             raise ValidationError(f"{obs.isin}: {obs.date} is before the last stored date {last_date}")
         move = obs.nav / history.iloc[-1] - 1
         limit = MAX_MOVE[asset_class]
-        if abs(move) > limit and not confirm_jump:
+        close = (obs.date - last_date).days <= MOVE_CHECK_DAYS
+        if close and abs(move) > limit and not confirm_jump:
             raise ValidationError(
                 f"{obs.isin}: move of {move:+.2%} vs {last_date} exceeds {limit:.0%}; "
                 "check the source and confirm it if it is real")

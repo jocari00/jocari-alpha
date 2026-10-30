@@ -49,6 +49,22 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
+## Computing returns from the Drive export
+
+Routine 2 exports the "VL fondos" tab as CSV and runs:
+
+```bash
+.venv/bin/python -m jocari.cli compute --nav vl_fondos.csv --asof 2026-11-01 \
+    --json data/results.json --table carteras_vs_benchmark.csv
+```
+
+- `data/results.json` (committed, read by the website): for each portfolio and its benchmark,
+  the values at each valuation date and each period's return, marked `estimated` (to the live
+  start) or `live`. It contains combined returns only, never a fund's NAV.
+- The CSV table goes into the sheet tab "Carteras vs benchmark".
+- A `provisional` return since the last month end is included for the sheet; the site ignores it.
+- Rows that fail validation and portfolios that could not be valued are listed in the output.
+
 ## Changing a portfolio's target weights
 
 1. Append a new entry to `decisions/<portfolio>.yaml` with a future `effective_date`:
