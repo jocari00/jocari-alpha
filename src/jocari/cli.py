@@ -1,7 +1,8 @@
 """Command line entry points.
 
   python -m jocari.cli check-decisions
-  python -m jocari.cli compute --nav vl_fondos.csv --asof YYYY-MM-DD --json out.json --table out.csv
+  python -m jocari.cli compute --nav vl_fondos.csv --asof YYYY-MM-DD --json data/results.json \
+      --report report.json --table table.csv
 """
 from __future__ import annotations
 
@@ -30,16 +31,17 @@ def check_decisions(_a) -> int:
 
 def compute_cmd(a) -> int:
     from .compute import compute, write_outputs
-    doc, table = compute(Path(a.nav), date.fromisoformat(a.asof))
-    write_outputs(doc, table, Path(a.json) if a.json else None, Path(a.table) if a.table else None)
+    doc, report, table = compute(Path(a.nav), date.fromisoformat(a.asof))
+    write_outputs(doc, report, table, Path(a.json) if a.json else None,
+                  Path(a.report) if a.report else None, Path(a.table) if a.table else None)
     for pid, e in doc["portfolios"].items():
         if e["periods"]:
             last = e["periods"][-1]
             print(f"{e['name']:13s} to {last['to']}: portfolio {last['portfolio']:+.2%}  "
                   f"benchmark {last['benchmark']:+.2%}  YTD {e['ytd']['portfolio']:+.2%} vs {e['ytd']['benchmark']:+.2%}")
         else:
-            print(f"{e['name']:13s} not valued; missing: {e['missing']}")
-    for r in doc["rejected_rows"]:
+            print(f"{e['name']:13s} not valued; missing: {report['portfolios'][pid]['missing']}")
+    for r in report["rejected_rows"]:
         print(f"::warning::rejected {r['isin']} {r['date']}: {r['reason']}")
     return 0
 
@@ -52,7 +54,8 @@ def main(argv=None) -> int:
     p = sub.add_parser("compute", help="portfolio and benchmark returns from the Drive NAV export")
     p.add_argument("--nav", required=True, help="CSV export of the 'VL fondos' tab")
     p.add_argument("--asof", required=True, help="last date to include (YYYY-MM-DD)")
-    p.add_argument("--json", help="output JSON (combined returns only)")
+    p.add_argument("--json", help="public results JSON (closed valuations, combined returns only)")
+    p.add_argument("--report", help="private report JSON (provisional, missing data, rejected rows)")
     p.add_argument("--table", help="output CSV for the 'Carteras vs benchmark' tab")
     p.set_defaults(fn=compute_cmd)
     a = ap.parse_args(argv)

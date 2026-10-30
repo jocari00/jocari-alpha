@@ -5,9 +5,13 @@ ISIN, NAV date and NAV columns are used; headers are matched case-insensitively 
 Spanish or English. Rows are validated per instrument in date order; a rejected row is
 reported and left out.
 
-Output (combined returns only, never a fund's NAV):
-- a JSON document for the website and for routine 2's message;
-- a flat table for the sheet tab "Carteras vs benchmark".
+Outputs:
+- results (public, committed, read by the website): closed valuations only, combined
+  portfolio and benchmark returns, never a fund's NAV. It only changes when a new
+  valuation date closes, so an unchanged file means there is nothing to publish.
+- report (private, for routine 2's message): provisional return since the last month
+  end, portfolios that could not be valued, rejected rows.
+- table: rows for the sheet tab "Carteras vs benchmark".
 """
 from __future__ import annotations
 
@@ -76,12 +80,12 @@ def read_nav_csv(path: Path, asset_class: dict[str, str], today: date) -> NavDat
         try:
             d, v = _date(r[cd]), _number(r[cn])
         except ValueError:
-            out.rejected.append({"isin": isin, "date": r[cd], "nav": r[cn], "reason": "unreadable date or NAV"})
+            out.rejected.append({"isin": isin, "date": r[cd], "reason": "unreadable date or NAV"})
             continue
         prev = parsed.setdefault(isin, {}).get(d)
         if prev is not None and abs(prev - v) > 1e-9:
-            out.rejected.append({"isin": isin, "date": d.isoformat(), "nav": v,
-                                 "reason": f"conflicting NAV for the same date (kept {prev})"})
+            out.rejected.append({"isin": isin, "date": d.isoformat(),
+                                 "reason": "conflicting NAVs for the same date (kept the first)"})
             continue
         parsed[isin][d] = v  # the sheet repeats the same NAV under several references
     for isin, obs in parsed.items():
@@ -90,7 +94,7 @@ def read_nav_csv(path: Path, asset_class: dict[str, str], today: date) -> NavDat
             try:
                 validate(Observation(isin, d, obs[d]), hist, asset_class[isin], today=today)
             except ValidationError as e:
-                out.rejected.append({"isin": isin, "date": d.isoformat(), "nav": obs[d], "reason": str(e)})
+                out.rejected.append({"isin": isin, "date": d.isoformat(), "reason": str(e)})
                 continue
             hist = pd.concat([hist, pd.Series([obs[d]], index=[pd.Timestamp(d)])])
         out.series[isin] = hist
@@ -143,7 +147,7 @@ def _bench_decisions(p: Portfolio) -> list[Decision]:
     return [Decision(p.decisions[0].effective_date, "benchmark", {k: v for k, v in p.benchmark.items() if v > 0})]
 
 
-def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, list[list]]:
+def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, dict, list[list]]:
     tracking = yaml.safe_load(open(root / "config" / "tracking.yaml", encoding="utf-8"))
     base, live = tracking["base_date"], tracking["live_start"]
     funds = load_instruments(root)
@@ -152,9 +156,9 @@ def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, list[li
     data = read_nav_csv(nav_csv, asset_class, today=asof)
     dates = valuation_dates(base, live, asof)
 
-    doc = {"asof": asof.isoformat(), "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-           "base_date": base.isoformat(), "live_start": live.isoformat(),
-           "weights": "constant", "portfolios": {}, "rejected_rows": data.rejected}
+    doc = {"base_date": base.isoformat(), "live_start": live.isoformat(), "weights": "constant", "portfolios": {}}
+    report = {"asof": asof.isoformat(), "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "portfolios": {}, "rejected_rows": data.rejected}
     table = [["Cartera", "Desde", "Hasta", "Tipo", "Cartera %", "Benchmark %", "Diferencia %",
               "YTD cartera %", "YTD benchmark %"]]
 
@@ -163,8 +167,9 @@ def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, list[li
         bench_isins = sorted(k for k, v in p.benchmark.items() if v > 0)
         pv, pgaps = _value(p.decisions, holdings, data.series, dates)
         bv, bgaps = _value(_bench_decisions(p), bench_isins, data.series, dates)
-        entry = {"name": p.name, "equity_target": p.equity_target, "missing": {"portfolio": pgaps, "benchmark": bgaps},
-                 "dates": [], "portfolio": [], "benchmark": [], "periods": [], "provisional": None}
+        entry = {"name": p.name, "equity_target": p.equity_target,
+                 "dates": [], "portfolio": [], "benchmark": [], "periods": []}
+        rep = {"missing": {"portfolio": pgaps, "benchmark": bgaps}, "provisional": None}
         if pv is not None and bv is not None:
             common = pv.index.intersection(bv.index)
             pv, bv = pv.loc[common], bv.loc[common]
@@ -182,9 +187,14 @@ def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, list[li
                               f"{rp * 100:.2f}", f"{rb * 100:.2f}", f"{(rp - rb) * 100:.2f}",
                               f"{ytd_return(pv, t) * 100:.2f}", f"{ytd_return(bv, t) * 100:.2f}"])
             entry["ytd"] = {"portfolio": round(ytd_return(pv), 6), "benchmark": round(ytd_return(bv), 6)}
-            entry["provisional"] = _provisional(p, data.series, pv, asof)
+            rep["provisional"] = _provisional(p, data.series, pv, asof)
+            if rep["provisional"]:
+                pr = rep["provisional"]
+                table.append([p.name, pr["since"], pr["date"], "provisional", f"{pr['portfolio'] * 100:.2f}",
+                              f"{pr['benchmark'] * 100:.2f}", f"{pr['excess'] * 100:.2f}", "", ""])
         doc["portfolios"][pid] = entry
-    return doc, table
+        report["portfolios"][pid] = rep
+    return doc, report, table
 
 
 def _provisional(p: Portfolio, navs, pv: pd.Series, asof: date) -> dict | None:
@@ -198,8 +208,8 @@ def _provisional(p: Portfolio, navs, pv: pd.Series, asof: date) -> dict | None:
         w = [d for d in decisions if pd.Timestamp(d.effective_date) <= last][-1].weights
         r = 0.0
         for i, wt in w.items():
-            if i not in navs:
-                return None
+            if i not in navs or navs[i].index[-1] <= last:
+                return None  # no NAV newer than the last valuation: nothing provisional to show
             v = align({i: navs[i]}, idx)[i]
             if v.isna().any():
                 return None
@@ -209,10 +219,17 @@ def _provisional(p: Portfolio, navs, pv: pd.Series, asof: date) -> dict | None:
     return out
 
 
-def write_outputs(doc: dict, table: list[list], json_path: Path | None, table_path: Path | None) -> None:
+def _write_json(obj: dict, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(obj, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def write_outputs(doc: dict, report: dict, table: list[list], json_path: Path | None,
+                  report_path: Path | None, table_path: Path | None) -> None:
     if json_path:
-        json_path.parent.mkdir(parents=True, exist_ok=True)
-        json_path.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        _write_json(doc, json_path)
+    if report_path:
+        _write_json(report, report_path)
     if table_path:
         table_path.parent.mkdir(parents=True, exist_ok=True)
         with open(table_path, "w", newline="", encoding="utf-8") as f:
