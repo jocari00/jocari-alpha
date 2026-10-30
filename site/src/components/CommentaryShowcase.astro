@@ -53,7 +53,7 @@ const c = cover ? short(cover.period) : null;
           ))}
         </span>
       )}
-      <span class="cover-foot">{cover.written ? `${t.written} ${fmtDate(lang, cover.written)}` : (en ? "Coming soon" : "Próximamente")}
+      <span class="cover-foot">{cover.written ? `${t.written} ${fmtDate(lang, cover.written)}` : (cover.filled ? "" : (en ? "Coming soon" : "Próximamente"))}
         <span class="read">{en ? "Open" : "Abrir"}</span></span>
     </a>
     <ol class="thumbs">

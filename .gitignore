@@ -10,3 +10,4 @@ dist/
 
 # Local Claude Code tooling (Impeccable skill + engine binary)
 .claude/
+drafts/
