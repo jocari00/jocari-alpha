@@ -1,0 +1,165 @@
+---
+// Growth of 100: portfolio vs benchmark. The estimated period (base -> live start) is drawn
+// dashed; live month ends are solid. Two series -> legend + direct labels; a data table
+// gives a non-visual reading; crosshair tooltip on hover.
+import { T, LOCALE, fmtDate, num } from "../lib/i18n.js";
+
+interface Props { lang: "en" | "es"; data: { dates: string[]; portfolio: number[]; benchmark: number[] };
+                  liveStart: string; name: string }
+const { lang, data, liveStart, name } = Astro.props;
+const t = T[lang];
+const payload = JSON.stringify({ ...data, liveStart, locale: LOCALE[lang],
+  labels: { portfolio: t.portfolio, benchmark: t.benchmark, estimated: t.estimated, live: t.live } });
+const last = data.dates.length - 1;
+const summary = last > 0
+  ? `${t.chartTitle} (${name}): ${t.portfolio} ${num(lang, data.portfolio[last])}, ${t.benchmark} ${num(lang, data.benchmark[last])} (${fmtDate(lang, data.dates[last])}).`
+  : t.notValued;
+---
+<figure class="perf">
+  <div class="perf-head">
+    <figcaption>{t.chartTitle}</figcaption>
+    <div class="ranges" role="group" aria-label="Range">
+      {(["ytd", "1y", "all"] as const).map((r) => (
+        <button type="button" data-range={r} aria-pressed={r === "all" ? "true" : "false"}>{t.range[r]}</button>
+      ))}
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="key key-1" aria-hidden="true"></span>{t.portfolio}</li>
+    <li><span class="key key-2" aria-hidden="true"></span>{t.benchmark}</li>
+    <li><span class="key key-dash" aria-hidden="true"></span>{t.estimated}</li>
+  </ul>
+  <div class="chart" role="img" aria-label={summary} data-chart={payload}>
+    <div class="tip" hidden></div>
+  </div>
+  <details class="data-table">
+    <summary>{t.dataTable}</summary>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>{t.date}</th><th class="num">{t.portfolio}</th><th class="num">{t.benchmark}</th><th></th></tr></thead>
+        <tbody>
+          {data.dates.map((d, i) => (
+            <tr><td>{fmtDate(lang, d)}</td><td class="num">{num(lang, data.portfolio[i])}</td>
+                <td class="num">{num(lang, data.benchmark[i])}</td>
+                <td>{i === 0 ? "" : d <= liveStart ? t.estimated : t.live}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<script>
+  import { createChart, LineSeries, LineStyle, createSeriesMarkers } from "lightweight-charts";
+
+  const css = (el: Element, v: string) => getComputedStyle(el).getPropertyValue(v).trim();
+
+  for (const el of document.querySelectorAll<HTMLElement>("[data-chart]")) {
+    const d = JSON.parse(el.dataset.chart!);
+    if (d.dates.length < 2) continue;
+    const fig = el.closest("figure")!;
+    const tip = el.querySelector<HTMLElement>(".tip")!;
+    const nf = new Intl.NumberFormat(d.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const df = new Intl.DateTimeFormat(d.locale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+    const chart = createChart(el, {
+      autoSize: true,
+      handleScale: { mouseWheel: false, pinch: true, axisPressedMouseMove: true },
+      handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+      localization: { locale: d.locale, priceFormatter: (p: number) => nf.format(p) },
+      timeScale: { borderVisible: false, fixLeftEdge: true, fixRightEdge: true },
+      rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.15, bottom: 0.1 } },
+      crosshair: { horzLine: { visible: false, labelVisible: false } },
+    });
+
+    const split = (vals: number[]) => {
+      const pts = d.dates.map((t: string, i: number) => ({ time: t, value: vals[i] }));
+      const k = d.dates.findIndex((t: string) => t >= d.liveStart);
+      return { est: pts.slice(0, k + 1), live: k >= 0 ? pts.slice(k) : [] };
+    };
+    const mk = (color: string, dashed: boolean, title: string, lastLabel: boolean) =>
+      chart.addSeries(LineSeries, { color, lineWidth: 2, lineStyle: dashed ? LineStyle.Dashed : LineStyle.Solid,
+        priceLineVisible: false, lastValueVisible: lastLabel, title, crosshairMarkerRadius: 4,
+        pointMarkersVisible: true, pointMarkersRadius: 3 });
+
+    const p = split(d.portfolio), b = split(d.benchmark);
+    const hasLive = p.live.length > 1;
+    const series = {
+      pEst: mk("", true, d.labels.portfolio, !hasLive), bEst: mk("", true, d.labels.benchmark, !hasLive),
+      pLive: hasLive ? mk("", false, d.labels.portfolio, true) : null,
+      bLive: hasLive ? mk("", false, d.labels.benchmark, true) : null,
+    };
+    series.pEst.setData(p.est); series.bEst.setData(b.est);
+    series.pLive?.setData(p.live); series.bLive?.setData(b.live);
+    const markers = series.pLive ? createSeriesMarkers(series.pLive, []) : null;
+
+    const paint = () => {
+      const c1 = css(fig, "--series-1"), c2 = css(fig, "--series-2");
+      chart.applyOptions({
+        layout: { background: { color: "transparent" }, textColor: css(fig, "--text-2"), fontFamily: css(fig, "--font"),
+                  attributionLogo: true },
+        grid: { vertLines: { visible: false }, horzLines: { color: css(fig, "--grid") } },
+        crosshair: { vertLine: { color: css(fig, "--muted"), labelBackgroundColor: css(fig, "--text-2") } },
+      });
+      for (const [s, c] of [[series.pEst, c1], [series.pLive, c1], [series.bEst, c2], [series.bLive, c2]] as const)
+        s?.applyOptions({ color: c, crosshairMarkerBorderColor: css(fig, "--surface") });
+      markers?.setMarkers([{ time: d.liveStart, position: "belowBar", shape: "arrowUp",
+                             color: css(fig, "--muted"), text: d.labels.live }]);
+    };
+    paint();
+    window.addEventListener("themechange", paint);
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paint);
+    chart.timeScale().fitContent();
+
+    // Tooltip: date + both values (text in ink, identity from the key swatch).
+    chart.subscribeCrosshairMove((param) => {
+      if (!param.time || !param.point) { tip.hidden = true; return; }
+      const i = d.dates.indexOf(param.time as string);
+      if (i < 0) { tip.hidden = true; return; }
+      const kind = i === 0 ? "" : d.dates[i] <= d.liveStart ? d.labels.estimated : d.labels.live;
+      tip.innerHTML = `<strong>${df.format(new Date(d.dates[i] + "T00:00:00Z"))}</strong>${kind ? ` · ${kind}` : ""}
+        <div><span class="key key-1"></span>${d.labels.portfolio} ${nf.format(d.portfolio[i])}</div>
+        <div><span class="key key-2"></span>${d.labels.benchmark} ${nf.format(d.benchmark[i])}</div>`;
+      tip.hidden = false;
+      const x = Math.min(param.point.x + 14, el.clientWidth - tip.offsetWidth - 4);
+      tip.style.transform = `translate(${Math.max(4, x)}px, 8px)`;
+    });
+
+    // Period buttons.
+    const lastDate = d.dates[d.dates.length - 1];
+    fig.querySelectorAll<HTMLButtonElement>("[data-range]").forEach((btn) => btn.addEventListener("click", () => {
+      fig.querySelectorAll("[data-range]").forEach((x) => x.setAttribute("aria-pressed", String(x === btn)));
+      const r = btn.dataset.range;
+      if (r === "all") { chart.timeScale().fitContent(); return; }
+      const end = new Date(lastDate + "T00:00:00Z");
+      const from = r === "ytd" ? `${end.getUTCFullYear() - 1}-12-31`
+        : new Date(Date.UTC(end.getUTCFullYear() - 1, end.getUTCMonth(), end.getUTCDate())).toISOString().slice(0, 10);
+      const start = d.dates.filter((t: string) => t <= from).pop() ?? d.dates[0];
+      chart.timeScale().setVisibleRange({ from: start, to: lastDate });
+    }));
+  }
+</script>
+
+<style>
+  .perf { margin: 1rem 0 2rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  .perf-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+  figcaption { font-weight: 600; }
+  .ranges { display: flex; gap: 4px; }
+  .ranges button { font: inherit; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+                   background: none; border: 1px solid var(--line); color: var(--text-2); }
+  .ranges button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); border-color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; padding: 0; margin: 10px 0 6px;
+            font-size: 0.875rem; color: var(--text-2); }
+  .legend li { display: flex; align-items: center; gap: 6px; }
+  :global(.key) { display: inline-block; width: 16px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
+  :global(.key-1) { border-color: var(--series-1); }
+  :global(.key-2) { border-color: var(--series-2); }
+  .key-dash { border-top: 2px dashed var(--muted); }
+  .chart { position: relative; height: 320px; }
+  @media (max-width: 600px) { .chart { height: 260px; } }
+  .tip { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; background: var(--surface);
+         border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 0.8rem; color: var(--text);
+         box-shadow: 0 2px 8px rgb(0 0 0 / 0.08); white-space: nowrap; }
+  .data-table { margin-top: 10px; font-size: 0.875rem; }
+  .data-table summary { cursor: pointer; color: var(--text-2); }
+</style>

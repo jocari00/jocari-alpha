@@ -1,0 +1,35 @@
+---
+import Base from "../layouts/Base.astro";
+import PeriodReturns from "../components/PeriodReturns.astro";
+import { T, href, fmtPeriod, fmtDate } from "../lib/i18n.js";
+import { listCommentary } from "../lib/content.js";
+import { loadResults, loadPortfolios, PORTFOLIO_IDS } from "../lib/data.js";
+interface Props { lang: "en" | "es"; slug: string }
+const { lang, slug } = Astro.props;
+const t = T[lang];
+const c = listCommentary(lang).find((x) => x.slug === slug)!;
+const { Content } = c;
+const names = Object.fromEntries(loadPortfolios().map((p) => [p.id, p.name]));
+const heading = c.title || fmtPeriod(lang, c.period);
+---
+<Base lang={lang} title={heading} path={`commentary/${slug}/`}>
+  <p class="muted"><a href={href(lang, "commentary/")}>{t.nav.commentary}</a> /</p>
+  <h1>{heading}</h1>
+  <p class="muted">{t.period}: {fmtPeriod(lang, c.period)}{c.written && ` · ${t.written} ${fmtDate(lang, c.written)}`}</p>
+  {c.fallback && <p class="muted" role="note">{t.onlyIn(c.shownLang)}</p>}
+
+  {c.kind === "monthly" && <PeriodReturns lang={lang} results={loadResults()} ids={PORTFOLIO_IDS} period={c.period} />}
+
+  <article class="prose" lang={c.shownLang}>
+    {c.filled ? <Content /> : <p class="placeholder">{t.comingSoon}</p>}
+  </article>
+
+  {Object.values(c.portfolios).some(Boolean) && (
+    <section>
+      <h2>{t.nav.portfolios}</h2>
+      <ul>{PORTFOLIO_IDS.filter((id) => c.portfolios[id]).map((id) => (
+        <li><a href={href(lang, `portfolios/${id}/`)}>{names[id]}</a>: {c.portfolios[id]}</li>
+      ))}</ul>
+    </section>
+  )}
+</Base>

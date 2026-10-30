@@ -1,0 +1,23 @@
+---
+import Base from "../layouts/Base.astro";
+import { T, href, fmtPeriod, fmtDate } from "../lib/i18n.js";
+import { listCommentary } from "../lib/content.js";
+interface Props { lang: "en" | "es" }
+const { lang } = Astro.props;
+const t = T[lang];
+const items = listCommentary(lang);
+---
+<Base lang={lang} title={t.nav.commentary} path="commentary/">
+  <h1>{t.nav.commentary}</h1>
+  <ol class="archive">
+    {items.map((c) => (
+      <li>
+        <a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a>
+        {c.title && <span> — {c.title}</span>}
+        {!c.filled && <span class="placeholder"> · {t.comingSoon}</span>}
+        {c.written && <span class="muted"> · {t.written} {fmtDate(lang, c.written)}</span>}
+      </li>
+    ))}
+  </ol>
+</Base>
+<style>.archive { padding-left: 1.2rem; } .archive li { margin-bottom: 0.6rem; }</style>

@@ -1,0 +1,75 @@
+---
+import Base from "../layouts/Base.astro";
+import PerfChart from "../components/PerfChart.astro";
+import Composition from "../components/Composition.astro";
+import { T, href, pct, fmtDate, fmtPeriod, weight } from "../lib/i18n.js";
+import { loadPortfolios, loadResults, loadInstruments, composition } from "../lib/data.js";
+import { listCommentary, getEditorial } from "../lib/content.js";
+interface Props { lang: "en" | "es"; id: string }
+const { lang, id } = Astro.props;
+const t = T[lang];
+const p = loadPortfolios().find((x) => x.id === id)!;
+const results = loadResults();
+const r = results.portfolios[id];
+const n = r?.dates?.length ?? 0;
+const ins = loadInstruments();
+const ed = getEditorial(lang);
+const mentions = listCommentary(lang).filter((c) => c.portfolios?.[id]);
+const last = n >= 2 ? r.periods[r.periods.length - 1] : null;
+const total = n >= 2 ? { p: r.portfolio[n - 1] / 100 - 1, b: r.benchmark[n - 1] / 100 - 1 } : null;
+const ytdOf = (vals: number[]) => {
+  const year = r.dates[n - 1].slice(0, 4);
+  const i = r.dates.findLastIndex((d: string) => d < `${year}-01-01`);
+  return vals[n - 1] / vals[Math.max(i, 0)] - 1;
+};
+const ytd = n >= 2 ? { p: ytdOf(r.portfolio), b: ytdOf(r.benchmark) } : null;
+const sign = (x: number) => (x > 0 ? "pos" : x < 0 ? "neg" : "");
+// Show each tile only when it adds information (with one period all three would repeat).
+const showLast = n > 2;
+const showTotal = n >= 2 && r.dates[0].slice(0, 4) !== String(Number(r.dates[n - 1].slice(0, 4)) - 1);
+const benchNames: Record<string, string> = { IE00B6R52259: "MSCI ACWI", IE00B3VTMJ91: "EUR Govt 1-3", IE00BH04FZ00: "EUR Corp 1-3" };
+---
+<Base lang={lang} title={p.name} path={`portfolios/${id}/`}>
+  <p class="muted"><a href={href(lang, "portfolios/")}>{t.nav.portfolios}</a> /</p>
+  <h1>{p.name}</h1>
+  <p class="lede">{t.equity} {p.equity} % · {t.fixedIncome} {p.fixedIncome} %</p>
+
+  {ytd && total && last && (
+    <div class={`grid ${showLast || showTotal ? "grid-3" : "one"} tiles`}>
+      <div class="card"><div class="muted">{t.ytd}</div><div class="big">{pct(lang, ytd.p)}</div>
+        <div class="muted">{t.benchmark} {pct(lang, ytd.b)} · <span class={sign(ytd.p - ytd.b)}>{pct(lang, ytd.p - ytd.b)}</span></div></div>
+      {showLast && <div class="card"><div class="muted">{t.lastPeriod} · {fmtDate(lang, last.to)}</div><div class="big">{pct(lang, last.portfolio)}</div>
+        <div class="muted">{t.benchmark} {pct(lang, last.benchmark)} · <span class={sign(last.excess)}>{pct(lang, last.excess)}</span>
+          {last.type === "estimated" && <span class="tag">{t.estimated}</span>}</div></div>}
+      {showTotal && <div class="card"><div class="muted">{t.sinceStart}</div><div class="big">{pct(lang, total.p)}</div>
+        <div class="muted">{t.benchmark} {pct(lang, total.b)} · <span class={sign(total.p - total.b)}>{pct(lang, total.p - total.b)}</span></div></div>}
+    </div>
+  )}
+
+  {n >= 2
+    ? <PerfChart lang={lang} data={r} liveStart={results.live_start} name={p.name} />
+    : <p class="placeholder">{t.notValued}</p>}
+  <p class="muted">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}</p>
+
+  <h2>{t.portfolioComment}</h2>
+  <p class={ed.portfolios?.[id] ? "" : "placeholder"}>{ed.portfolios?.[id] || t.comingSoon}</p>
+  {mentions.length > 0 && (
+    <ul>{mentions.map((c) => <li><a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a>: {c.portfolios[id]}</li>)}</ul>
+  )}
+
+  <h2>{t.composition}</h2>
+  <Composition lang={lang} blocks={composition(p, ins)} fundNotes={ed.funds} blockNotes={ed.blocks} />
+
+  <h2>{t.benchmarkMix}</h2>
+  <ul>
+    {Object.entries(p.benchmark).filter(([, w]) => (w as number) > 0).map(([isin, w]) => (
+      <li>{weight(lang, w as number)} {benchNames[isin]} <span class="muted">· {ins.benchmarks[isin].name}</span></li>
+    ))}
+  </ul>
+  <p><a href={href(lang, "methodology/")}>{t.nav.methodology} →</a></p>
+</Base>
+<style>
+  .tiles { margin: 1.5rem 0 0.5rem; }
+  .one { max-width: 340px; }
+  .big { font-size: 1.9rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; margin: 4px 0; }
+</style>

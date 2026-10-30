@@ -1,0 +1,16 @@
+---
+import Base from "../layouts/Base.astro";
+import RiskLadder from "../components/RiskLadder.astro";
+import ReturnsTable from "../components/ReturnsTable.astro";
+import { T } from "../lib/i18n.js";
+import { loadPortfolios, loadResults, PORTFOLIO_IDS } from "../lib/data.js";
+interface Props { lang: "en" | "es" }
+const { lang } = Astro.props;
+const t = T[lang];
+---
+<Base lang={lang} title={t.nav.portfolios} path="portfolios/">
+  <h1>{t.nav.portfolios}</h1>
+  <RiskLadder lang={lang} portfolios={loadPortfolios()} />
+  <h2>{t.portfolio} vs {t.benchmark}</h2>
+  <ReturnsTable lang={lang} results={loadResults()} ids={PORTFOLIO_IDS} />
+</Base>

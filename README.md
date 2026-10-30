@@ -89,6 +89,28 @@ yourself, with the date, the NAV and the source you read it from. Routine 2 vali
 row (no future dates or weekends, no duplicates, no move above 5% for fixed income or 15% for
 equity without confirmation) before using it.
 
-## Adding a market commentary
+## Website
 
-*Coming in the website phase.*
+Astro static site in `site/`, deployed to GitHub Pages by `.github/workflows/pages.yml` on every
+push that touches the site, the results or the portfolio definitions. It reads `decisions/`,
+`config/` and `data/results.json` at build time; until the first results exist it shows clearly
+labelled sample data.
+
+```bash
+cd site && npm ci && npm run dev      # local preview
+```
+
+To move to a custom domain later, build with `SITE_URL=https://jocari.net BASE_PATH=/`.
+
+## Editing the site's text
+
+Everything editorial is Markdown in `site/content/`, one file per language:
+
+- `editorial/en.md` / `es.md`: one paragraph per portfolio, per block and (optionally) per fund.
+  Leave a value empty to show "Commentary coming soon".
+- `pages/{methodology,about,legal}.{en,es}.md`: the text pages. Put your LinkedIn URL in the
+  `linkedin` field of `about.*.md`.
+- `commentary/{en,es}/<period>.md`: market commentary. Copy `commentary/_template.md`, name it by
+  the period it covers (`2026-11.md` for a month, `2026-q1.md` for a quarter) and set `written` to
+  the real date you wrote it. Monthly commentaries get the period's returns block automatically.
+  If a commentary exists in only one language, the other language shows it with a notice.

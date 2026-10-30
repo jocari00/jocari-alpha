@@ -1,0 +1,7 @@
+---
+import View from "../../../views/Commentary.astro";
+import { listCommentary } from "../../../lib/content.js";
+export function getStaticPaths() { return listCommentary("es").map((c) => ({ params: { slug: c.slug } })); }
+const { slug } = Astro.params;
+---
+<View lang="es" slug={slug} />

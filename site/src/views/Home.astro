@@ -1,0 +1,36 @@
+---
+import Base from "../layouts/Base.astro";
+import RiskLadder from "../components/RiskLadder.astro";
+import ReturnsTable from "../components/ReturnsTable.astro";
+import { T, href, fmtPeriod, fmtDate } from "../lib/i18n.js";
+import { loadPortfolios, loadResults, PORTFOLIO_IDS } from "../lib/data.js";
+import { listCommentary } from "../lib/content.js";
+interface Props { lang: "en" | "es" }
+const { lang } = Astro.props;
+const t = T[lang];
+const portfolios = loadPortfolios();
+const results = loadResults();
+const latest = listCommentary(lang).find((c) => c.filled);
+const intro = lang === "en"
+  ? "Five model portfolios of investment funds, from 0% to 100% equity, each tracked every month against a passive benchmark with the same mix. Every decision is recorded publicly before it takes effect."
+  : "Cinco carteras modelo de fondos de inversión, del 0 % al 100 % de renta variable, cada una seguida mes a mes frente a un benchmark pasivo con su misma mezcla. Cada decisión se registra públicamente antes de entrar en vigor.";
+---
+<Base lang={lang}>
+  <h1>Jocari Alpha</h1>
+  <p class="lede">{intro}</p>
+
+  <h2>{t.ladder}</h2>
+  <RiskLadder lang={lang} portfolios={portfolios} />
+
+  <h2>{t.portfolio} vs {t.benchmark}</h2>
+  <ReturnsTable lang={lang} results={results} ids={PORTFOLIO_IDS} />
+  <p class="muted">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}{" "}
+    <a href={href(lang, "methodology/")}>{t.nav.methodology}</a></p>
+
+  <h2>{t.latestCommentary}</h2>
+  {latest
+    ? <p><a href={href(lang, `commentary/${latest.slug}/`)}>{latest.title || fmtPeriod(lang, latest.period)}</a>
+        <span class="muted"> · {fmtPeriod(lang, latest.period)}</span></p>
+    : <p class="placeholder">{t.comingSoon}</p>}
+  <p><a href={href(lang, "commentary/")}>{t.allCommentary} →</a></p>
+</Base>

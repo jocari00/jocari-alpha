@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+import { T } from "../lib/i18n.js";
+import { getPage } from "../lib/content.js";
+interface Props { lang: "en" | "es"; name: "methodology" | "about" | "legal" }
+const { lang, name } = Astro.props;
+const t = T[lang];
+const page = getPage(name, lang);
+const { Content } = page;
+const linkedin = name === "about" ? page.frontmatter.linkedin : null;
+---
+<Base lang={lang} title={page.title} path={`${name}/`}>
+  <h1>{page.title}</h1>
+  <article class="prose"><Content /></article>
+  {name === "about" && (
+    <p>{linkedin
+      ? <a href={linkedin} rel="noopener">LinkedIn — {t.inquiries}</a>
+      : <span class="placeholder">LinkedIn — {t.inquiries}</span>}</p>
+  )}
+</Base>

@@ -1,0 +1,15 @@
+{
+  "name": "jocari-alpha-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.4.4",
+    "js-yaml": "^5.5.0",
+    "lightweight-charts": "^5.2.1"
+  }
+}

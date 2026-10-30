@@ -1,0 +1,7 @@
+---
+import View from "../../views/Portfolio.astro";
+import { PORTFOLIO_IDS } from "../../lib/data.js";
+export function getStaticPaths() { return PORTFOLIO_IDS.map((id) => ({ params: { id } })); }
+const { id } = Astro.params;
+---
+<View lang="en" id={id} />
