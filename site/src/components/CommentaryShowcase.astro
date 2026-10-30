@@ -1,0 +1,112 @@
+---
+// The latest commentary as a report cover (huge period, title, opening lines and, once data
+// exists, the period's return for each portfolio against its benchmark), with the earlier
+// ones as thumbnails beside it.
+import { T, href, fmtDate, pct } from "../lib/i18n.js";
+import { listCommentary } from "../lib/content.js";
+import { loadResults, loadPortfolios, PORTFOLIO_IDS } from "../lib/data.js";
+interface Props { lang: "en" | "es" }
+const { lang } = Astro.props;
+const t = T[lang];
+const en = lang === "en";
+const items = listCommentary(lang);
+const [cover, ...rest] = items;
+const thumbs = rest.slice(0, 3);
+const results = loadResults();
+const names = Object.fromEntries(loadPortfolios().map((p) => [p.id, p.name]));
+
+const short = (period: string) => {
+  const q = /^(\d{4})-Q([1-4])$/.exec(period);
+  if (q) return { big: en ? `Q${q[2]}` : `T${q[2]}`, year: q[1] };
+  const m = /^(\d{4})-(\d{2})$/.exec(period);
+  const mon = new Intl.DateTimeFormat(en ? "en-GB" : "es-ES", { month: "short", timeZone: "UTC" })
+    .format(new Date(`${period}-01T00:00:00Z`)).replace(".", "");
+  return { big: mon.toUpperCase(), year: m ? m[1] : "" };
+};
+const kind = (k: string) => (k === "quarterly" ? (en ? "Quarterly note" : "Nota trimestral") : (en ? "Monthly note" : "Nota mensual"));
+// The cover's period returns (portfolio vs benchmark), when the month has a valuation.
+const bars = cover ? PORTFOLIO_IDS.map((id) => {
+  const per = results.portfolios[id]?.periods?.find((x: any) => x.to.slice(0, 7) === cover.period);
+  return per ? { id, name: names[id], p: per.portfolio, b: per.benchmark } : null;
+}).filter(Boolean) as any[] : [];
+const maxAbs = Math.max(0.0001, ...bars.flatMap((x) => [Math.abs(x.p), Math.abs(x.b)]));
+const c = cover ? short(cover.period) : null;
+---
+{cover && c && (
+  <div class="showcase">
+    <a class="cover" href={href(lang, `commentary/${cover.slug}/`)}>
+      <span class="cover-top"><span class="kind">{kind(cover.kind)}</span><span class={`status ${cover.filled ? "done" : ""}`}>{cover.filled ? (en ? "Published" : "Publicado") : (en ? "In preparation" : "En preparación")}</span></span>
+      <span class="period"><span class="big">{c.big}</span><span class="year">{c.year}</span></span>
+      <span class="title">{cover.title || (cover.filled ? "" : (en ? "What moved the portfolios this month" : "Qué movió las carteras este mes"))}</span>
+      {cover.filled && cover.excerpt && <span class="excerpt">{cover.excerpt}</span>}
+      {bars.length > 0 && (
+        <span class="bars" aria-label={en ? "Return of each portfolio in the period, with its benchmark" : "Rentabilidad de cada cartera en el periodo, con su benchmark"}>
+          {bars.map((x) => (
+            <span class="bar-row">
+              <span class="bn">{x.name}</span>
+              <span class="track">
+                <span class={`fill ${x.p < 0 ? "neg" : ""}`} style={`width:${(Math.abs(x.p) / maxAbs) * 100}%`}></span>
+                <span class="tick" style={`left:${(Math.abs(x.b) / maxAbs) * 100}%`}></span>
+              </span>
+              <span class="bv">{pct(lang, x.p)}</span>
+            </span>
+          ))}
+        </span>
+      )}
+      <span class="cover-foot">{cover.written ? `${t.written} ${fmtDate(lang, cover.written)}` : (en ? "Coming soon" : "Próximamente")}
+        <span class="read">{en ? "Open" : "Abrir"}</span></span>
+    </a>
+    <ol class="thumbs">
+      {thumbs.map((x) => { const s = short(x.period); return (
+        <li><a class="thumb" href={href(lang, `commentary/${x.slug}/`)}>
+          <span class="t-period"><span class="t-big">{s.big}</span><span class="t-year">{s.year}</span></span>
+          <span class="t-meta">
+            <span class="t-kind">{kind(x.kind)}</span>
+            <span class="t-status"><i class={x.filled ? "dot on" : "dot"}></i>{x.filled ? (x.title || (en ? "Published" : "Publicado")) : (en ? "Coming soon" : "Próximamente")}</span>
+          </span>
+        </a></li>); })}
+      <li><a class="thumb all" href={href(lang, "commentary/")}>{t.allCommentary}</a></li>
+    </ol>
+  </div>
+)}
+
+<style>
+  .showcase { display: grid; gap: 16px; }
+  @media (min-width: 900px) { .showcase { grid-template-columns: 1.6fr 1fr; } }
+  .cover { position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 380px; padding: 28px 30px 24px;
+           background: var(--accent); color: var(--on-accent); text-decoration: none; border-radius: 4px; overflow: hidden; }
+  a.cover:hover, a.cover:focus-visible { color: var(--on-accent); }
+  .cover-top { display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+  .status::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 1px solid currentColor; margin-right: 8px; vertical-align: 0; }
+  .status.done::before { background: currentColor; }
+  .period { display: flex; align-items: flex-end; gap: 14px; margin-top: auto; }
+  .big { font-size: clamp(5rem, 13vw, 9.5rem); font-weight: 300; line-height: 0.82; letter-spacing: -0.05em; }
+  .year { font-family: var(--mono); font-size: 1rem; letter-spacing: 0.1em; opacity: 0.8; padding-bottom: 8px; }
+  .title { font-size: clamp(1.2rem, 2.2vw, 1.55rem); font-weight: 300; line-height: 1.25; max-width: 30ch; }
+  .excerpt { font-size: 0.95rem; line-height: 1.55; opacity: 0.85; max-width: 56ch; }
+  .bars { display: grid; gap: 6px; max-width: 460px; }
+  .bar-row { display: grid; grid-template-columns: 7.5rem 1fr 4.5rem; align-items: center; gap: 10px; font-size: 0.8rem; }
+  .track { position: relative; height: 8px; background: color-mix(in srgb, currentColor 14%, transparent); border-radius: 2px; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; background: currentColor; border-radius: 2px; }
+  .fill.neg { opacity: 0.55; }
+  .tick { position: absolute; top: -4px; width: 2px; height: 16px; background: currentColor; opacity: 0.7; }
+  .bv { text-align: right; font-variant-numeric: tabular-nums; }
+  .cover-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 14px;
+                border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); font-family: var(--mono); font-size: 12px; }
+  .read { font-family: var(--font); font-size: 0.9rem; font-weight: 500; padding: 6px 14px; border: 1px solid currentColor; border-radius: 4px; }
+  .cover:hover .read, .cover:focus-visible .read { background: var(--on-accent); color: var(--accent); }
+
+  .thumbs { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-auto-rows: 1fr; }
+  .thumb { display: flex; align-items: center; gap: 18px; height: 100%; min-height: 84px; padding: 14px 18px; border: 1px solid var(--line);
+           border-radius: 4px; background: var(--surface); color: var(--text); text-decoration: none; transition: border-color 150ms; }
+  .thumb:hover, .thumb:focus-visible { border-color: var(--accent); }
+  .t-period { display: flex; flex-direction: column; min-width: 4.6rem; }
+  .t-big { font-size: 2.4rem; font-weight: 300; line-height: 0.9; letter-spacing: -0.04em; color: var(--ink); }
+  .t-year { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
+  .t-meta { display: flex; flex-direction: column; gap: 4px; }
+  .t-kind { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .t-status { font-size: 0.9rem; color: var(--text-2); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--muted); margin-right: 8px; }
+  .dot.on { background: var(--accent); border-color: var(--accent); }
+  .thumb.all { justify-content: center; color: var(--accent-ink); font-weight: 500; min-height: 56px; background: none; }
+</style>

@@ -1,27 +1,16 @@
 ---
 import Base from "../layouts/Base.astro";
 import Spectrum from "../components/Spectrum.astro";
-import { T, href, fmtPeriod, fmtDate, pct } from "../lib/i18n.js";
-import { loadPortfolios, loadResults, loadDecisionLog } from "../lib/data.js";
-import { listCommentary } from "../lib/content.js";
+import CommentaryShowcase from "../components/CommentaryShowcase.astro";
+import DecisionTimeline from "../components/DecisionTimeline.astro";
+import { T, href, fmtDate } from "../lib/i18n.js";
+import { loadPortfolios, loadResults } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
 const results = loadResults();
 const portfolios = loadPortfolios();
-const commentary = listCommentary(lang).slice(0, 4);
-const log = loadDecisionLog().slice(0, 4);
 const en = lang === "en";
-const ytd = (id: string) => {
-  const r = results.portfolios[id]; const n = r?.dates?.length ?? 0;
-  if (n < 2) return null;
-  const year = r.dates[n - 1].slice(0, 4);
-  const i = Math.max(r.dates.findLastIndex((d: string) => d < `${year}-01-01`), 0);
-  return { p: r.portfolio[n - 1] / r.portfolio[i] - 1, b: r.benchmark[n - 1] / r.benchmark[i] - 1 };
-};
-const sign = (x: number) => (x > 0 ? "pos" : x < 0 ? "neg" : "");
-const kindLabel = (k: string) => ({ initial: en ? "Initial allocation" : "Asignación inicial",
-  rebalance: en ? "Rebalance" : "Rebalanceo", change: en ? "Weight change" : "Cambio de pesos" } as Record<string, string>)[k] ?? k;
 ---
 <Base lang={lang}
       heading={en ? "Five model portfolios, from all bonds to all equity." : "Cinco carteras modelo, de todo bonos a todo bolsa."}
@@ -35,57 +24,23 @@ const kindLabel = (k: string) => ({ initial: en ? "Initial allocation" : "Asigna
   <p class="muted note">{t.estimatedNote(fmtDate(lang, results.base_date), fmtDate(lang, results.live_start))}
     {" "}<a href={href(lang, "methodology/")}>{t.nav.methodology}</a></p>
 
-  <div class="cols">
-    <section>
-      <div class="col-head"><h2 class="label">{t.nav.portfolios}</h2><span class="label">{en ? "Year to date" : "En el año"}</span></div>
-      <ul class="rows">
-        {portfolios.map((p) => { const y = ytd(p.id); return (
-          <li><a class="row" href={href(lang, `portfolios/${p.id}/`)}>
-            <span class="r-main">{p.name}<span class="r-sub mono">{p.equity} / {p.fixedIncome}</span></span>
-            {y ? <span class="r-fig">{pct(lang, y.p)}<span class={`r-sub mono ${sign(y.p - y.b)}`}>{pct(lang, y.p - y.b)} vs benchmark</span></span>
-               : <span class="r-fig r-wait mono">{en ? "Pending" : "Pendiente"}</span>}
-          </a></li>); })}
-      </ul>
-    </section>
-    <section>
-      <div class="col-head"><h2 class="label">{t.nav.commentary}</h2><a class="label" href={href(lang, "commentary/")}>{en ? "All" : "Todos"}</a></div>
-      <ul class="rows">
-        {commentary.map((c) => (
-          <li><a class="row" href={href(lang, `commentary/${c.slug}/`)}>
-            <span class="r-main">{c.title || fmtPeriod(lang, c.period)}
-              <span class="r-sub mono">{c.written ? `${t.written} ${fmtDate(lang, c.written)}` : (en ? "Not yet written" : "Sin escribir")}</span></span>
-            <span class="r-fig mono">{c.kind === "quarterly" ? (en ? "Quarterly" : "Trimestral") : (en ? "Monthly" : "Mensual")}</span>
-          </a></li>
-        ))}
-      </ul>
-    </section>
-    <section>
-      <div class="col-head"><h2 class="label">{en ? "Decision log" : "Registro de decisiones"}</h2>
-        <a class="label" href="https://github.com/jocari00/jocari-alpha/tree/main/decisions" rel="noopener">{en ? "Repository" : "Repositorio"}</a></div>
-      <ul class="rows">
-        {log.map((d) => (
-          <li><div class="row">
-            <span class="r-main">{kindLabel(d.kind)}<span class="r-sub mono">{d.portfolios.length === 5 ? (en ? "All five portfolios" : "Las cinco carteras") : d.portfolios.join(", ")}</span></span>
-            <span class="r-fig mono">{fmtDate(lang, d.date)}</span>
-          </div></li>
-        ))}
-      </ul>
-    </section>
+  <h2>{t.nav.commentary}</h2>
+  <CommentaryShowcase lang={lang} />
+
+  <div class="log">
+    <div>
+      <h2>{en ? "Decision log" : "Registro de decisiones"}</h2>
+      <p class="log-intro">{en
+        ? "Every change to a portfolio's weights is committed to a public repository before it takes effect. The commit date is the proof that the decision came before the result."
+        : "Cada cambio en los pesos de una cartera se registra en un repositorio público antes de entrar en vigor. La fecha del commit demuestra que la decisión fue anterior al resultado."}</p>
+    </div>
+    <DecisionTimeline lang={lang} />
   </div>
 </Base>
 <style>
   .note { margin-top: 1rem; max-width: 80ch; }
   .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 1.75rem; }
-  .cols { display: grid; gap: 40px; margin-top: 4rem; }
-  @media (min-width: 900px) { .cols { grid-template-columns: repeat(3, 1fr); gap: 48px; } }
-  .col-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-  .col-head h2.label { margin: 0; font-size: 11px; color: var(--ink); }
-  .col-head a.label { margin: 0; text-decoration: none; }
-  .row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; color: var(--text); text-decoration: none; min-height: 52px; }
-  a.row:hover .r-main { color: var(--accent-ink); }
-  .r-main { display: flex; flex-direction: column; font-weight: 500; }
-  .r-fig { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .r-sub { font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 2px; }
-  .r-sub.pos { color: var(--pos); } .r-sub.neg { color: var(--neg); }
-  .r-wait, .r-fig.mono { color: var(--muted); font-size: 12px; }
+  .log { display: grid; gap: 8px 64px; margin-top: 1rem; }
+  @media (min-width: 900px) { .log { grid-template-columns: 1fr 1.3fr; align-items: start; } .log :global(.timeline) { margin-top: 4.5rem; } }
+  .log-intro { color: var(--text-2); max-width: 46ch; }
 </style>

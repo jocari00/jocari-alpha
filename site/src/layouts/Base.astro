@@ -221,7 +221,12 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .figure { font-variant-numeric: tabular-nums lining-nums; }
   .btn-primary { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 4px;
                  background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 0.95rem; text-decoration: none; }
-  .btn-primary:hover { color: var(--on-accent); filter: brightness(1.15); }
+  a.btn-primary:hover, a.btn-primary:focus-visible { color: var(--on-accent); filter: brightness(1.15); }
+  /* Same lift as the risk-ladder columns. */
+  @media (prefers-reduced-motion: no-preference) {
+    .btn-primary { transition: transform 200ms ease-out, filter 200ms ease-out; }
+    a.btn-primary:hover, a.btn-primary:focus-visible { transform: scale(1.04); }
+  }
   .btn-quiet { font-size: 0.95rem; color: var(--accent-ink); }
   .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); }
   .segmented button { font: 500 0.78rem var(--font); padding: 6px 12px; border: 0; border-left: 1px solid var(--line);

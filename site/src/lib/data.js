@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { load as loadYaml } from "js-yaml";
+import { execFileSync } from "node:child_process";
 
 const ROOT = path.resolve(process.cwd(), "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -78,5 +79,18 @@ export function loadDecisionLog() {
       (byKey[key] ??= { date, kind: d.kind, portfolios: [] }).portfolios.push(p.name);
     }
   }
-  return Object.values(byKey).sort((a, b) => b.date.localeCompare(a.date));
+  const log = Object.values(byKey).sort((a, b) => b.date.localeCompare(a.date));
+  for (const d of log) d.commit = commitFor(d.date);
+  return log;
+}
+
+/** First commit that recorded a decision with this effective date (the proof of when it was written). */
+function commitFor(date) {
+  try {
+    const out = execFileSync("git", ["log", "--reverse", "-S", `effective_date: ${date}`, "--format=%H %cI", "--", "decisions/"],
+                             { cwd: ROOT, encoding: "utf8" }).trim().split("\n")[0];
+    if (!out) return null;
+    const [hash, when] = out.split(" ");
+    return { hash, short: hash.slice(0, 7), date: when.slice(0, 10) };
+  } catch { return null; }
 }

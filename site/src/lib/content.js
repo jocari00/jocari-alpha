@@ -24,8 +24,10 @@ export function listCommentary(lang) {
     if ((!mod || !isFilled(mod)) && v[other] && isFilled(v[other])) { mod = v[other]; shownLang = other; }
     mod ??= v[other];
     const fm = mod.frontmatter;
+    const plain = (mod.rawContent?.() ?? "").replace(/[#>*_`\[\]()!-]/g, " ").replace(/\s+/g, " ").trim();
+    const excerpt = plain.length > 220 ? plain.slice(0, 220).replace(/\s\S*$/, "") + "…" : plain;
     return { slug, period: String(fm.period), kind: fm.kind, title: fm.title || "", written: fm.written ? String(fm.written).slice(0, 10) : null,
-             portfolios: fm.portfolios || {}, filled: isFilled(mod), Content: mod.Content,
+             portfolios: fm.portfolios || {}, filled: isFilled(mod), Content: mod.Content, excerpt,
              shownLang, fallback: shownLang !== lang };
   }).sort((a, b) => sortKey(b.period).localeCompare(sortKey(a.period)));
 }
