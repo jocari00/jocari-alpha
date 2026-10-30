@@ -33,7 +33,7 @@ const w = (x: number) => (x ? weight(lang, x) : "–");
         </tr>
         {b.funds.map((f: any) => (
           <tr class="fund-row">
-            <th scope="row" class="fund-col">{f.name} <span class="cls">{f.share_class}</span></th>
+            <th scope="row" class="fund-col">{f.name}</th>
             {portfolios.map((p) => <td class={`num ${p.weights[f.isin] ? "" : "zero"}`}>{w(p.weights[f.isin] ?? 0)}</td>)}
           </tr>
         ))}
