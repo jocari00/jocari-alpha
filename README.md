@@ -3,7 +3,7 @@
 *Model portfolios & market commentary.*
 
 A static website with five model portfolios of investment funds (Defensive, Conservative,
-Balanced, Dynamic, Aggressive), each tracked daily against an ETF-based benchmark.
+Balanced, Dynamic, Aggressive), each tracked monthly against an ETF-based benchmark.
 
 > Model portfolios for educational and illustrative purposes only. This is not investment
 > advice or a personalised recommendation, and no third-party money is managed. Past
