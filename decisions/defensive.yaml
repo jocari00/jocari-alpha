@@ -1,0 +1,29 @@
+# Defensive — target weights (% of portfolio).
+# Each decision is committed BEFORE its effective date (except the initial one, see below).
+# To rebalance or change weights, append a new entry with a later effective_date.
+portfolio: defensive
+name: Defensive
+equity_target: 0
+fixed_income_target: 100
+benchmark:
+  IE00B6R52259: 0   # iShares MSCI ACWI (Acc)
+  IE00B3VTMJ91: 50   # iShares EUR Govt Bond 1-3yr (Acc)
+  IE00BH04FZ00: 50   # Vanguard EUR Corporate 1-3 Year (Acc)
+decisions:
+  - effective_date: 2025-12-31
+    kind: initial
+    note: >-
+      Initial allocation, defined in October 2026. The period from the base date
+      to the first commit is reconstructed with these weights (buy and hold).
+    weights:
+      LU0034353002: 20     # DWS Floating Rate Notes
+      FR0013506995: 10     # Lazard Euro Short Duration Income Opp. SRI
+      IE00BFZMJT78: 15     # Neuberger Berman Short Duration Euro Bond
+      ES0112618006: 10     # B&H Deuda
+      LU2200514128: 10     # Pareto Nordic Cross Credit
+      LU1623762843: 5      # Carmignac Portfolio Credit
+      IE000VA5W9H0: 10     # Man Global IG Opportunities
+      ES0140794001: 5      # Gamma Global
+      LU1694789535: 5      # DNCA Alpha Bonds
+      LU1112771503: 5      # Helium Selection
+      IE000N9XFSD0: 5      # Fermat Cat Bonds

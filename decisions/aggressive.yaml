@@ -1,0 +1,25 @@
+# Aggressive — target weights (% of portfolio).
+# Each decision is committed BEFORE its effective date (except the initial one, see below).
+# To rebalance or change weights, append a new entry with a later effective_date.
+portfolio: aggressive
+name: Aggressive
+equity_target: 100
+fixed_income_target: 0
+benchmark:
+  IE00B6R52259: 100   # iShares MSCI ACWI (Acc)
+  IE00B3VTMJ91: 0   # iShares EUR Govt Bond 1-3yr (Acc)
+  IE00BH04FZ00: 0   # Vanguard EUR Corporate 1-3 Year (Acc)
+decisions:
+  - effective_date: 2025-12-31
+    kind: initial
+    note: >-
+      Initial allocation, defined in October 2026. The period from the base date
+      to the first commit is reconstructed with these weights (buy and hold).
+    weights:
+      IE00BLP5S460: 5      # Jupiter Merian Global Equity Abs. Return
+      LU1593227850: 5      # BlackRock Asia Pacific Abs. Return
+      IE00BYX5NX33: 40     # Fidelity MSCI World
+      ES0124037005: 12.5   # Cobas Selección
+      ES0112611001: 12.5   # Azvalor Internacional
+      LU0329355670: 15     # Robeco QI Emerging Markets
+      LU1213836080: 10     # Fidelity Global Technology
