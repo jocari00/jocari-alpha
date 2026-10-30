@@ -112,7 +112,9 @@ Everything editorial is Markdown in `site/content/`, one file per language:
   `linkedin` field of `about.*.md`.
 - `commentary/{en,es}/<period>.md`: market commentary. Copy `commentary/_template.md` (English) or
   `commentary/_template.es.md` (Spanish); both lay out the sections (one line, macro, fixed income,
-  equity, alternatives, the portfolios, what we are watching). Name the file by
+  equity, alternatives, the portfolios, what we are watching). For the 2026 quarters before live
+  tracking use `_template-quarter-review.md` / `.es.md`: a shorter, qualitative review written after
+  the fact. Name the file by
   the period it covers (`2026-11.md` for a month, `2026-q1.md` for a quarter) and set `written` to
   the real date you wrote it. Monthly commentaries get the period's returns block automatically.
   If a commentary exists in only one language, the other language shows it with a notice.
