@@ -23,7 +23,7 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
     <li style={`--i:${i}`}>
       <a href={href(lang, `portfolios/${p.id}/`)}>
         <span class="name">{p.name}</span>
-        <span class="mix">{label(p.equity)}</span>
+        <span class="mix label">{label(p.equity)}</span>
         <span class="col" role="img" aria-label={`${t.equity} ${p.equity} %, ${t.fixedIncome} ${p.fixedIncome} %`}>
           {p.fixedIncome > 0 && <span class="fi" style={`flex:${p.fixedIncome}`}></span>}
           {p.equity > 0 && <span class="eq" style={`flex:${p.equity}`}></span>}
@@ -47,12 +47,12 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
 
 <style>
   .spectrum { list-style: none; padding: 0; margin: 2.5rem 0 0; display: grid; grid-template-columns: repeat(5, 1fr);
-              border-top: 1px solid var(--line); }
+              border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   .spectrum li + li { border-left: 1px solid var(--line); }
   .spectrum a { display: flex; flex-direction: column; height: 100%; padding: 20px 18px 22px; color: var(--text); text-decoration: none; }
   .spectrum a:hover .name { color: var(--accent-ink); }
-  .name { font-size: 1.2rem; font-weight: 500; letter-spacing: -0.01em; color: var(--ink); }
-  .mix { font-size: 0.82rem; color: var(--muted); margin-bottom: 18px; }
+  .name { font-size: 1.15rem; font-weight: 500; letter-spacing: -0.01em; color: var(--ink); }
+  .mix { margin: 2px 0 18px; }
   .col { display: flex; flex-direction: column; gap: 2px; height: 220px; margin-bottom: 18px; }
   .fi { background: var(--fi); border-radius: 3px 3px 0 0; }
   .eq { background: var(--series-1); border-radius: 3px 3px 0 0; }
@@ -60,6 +60,7 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
   .nums { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
   .ytd { font-size: 1.7rem; line-height: 1.2; color: var(--ink); font-weight: 300; letter-spacing: -0.02em; }
   .bm { font-size: 0.85rem; color: var(--text-2); }
+  .bm, .dx { font-variant-numeric: tabular-nums; }
   .dx { font-size: 0.85rem; color: var(--text-2); }
   .wait { font-size: 0.85rem; color: var(--muted); }
   .key { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 14px; font-size: 0.82rem; color: var(--muted); }

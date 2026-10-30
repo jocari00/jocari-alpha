@@ -90,23 +90,23 @@ const kicker = lang === "en"
 </Base>
 <style>
   .stats { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 56px; margin: 2rem 0 2.5rem; }
-  .hero-num { font-size: clamp(3rem, 9vw, 4.8rem); line-height: 1; font-weight: 300; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
+  .hero-num { font-size: clamp(3rem, 8vw, 4rem); line-height: 1; font-weight: 300; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
   dl { display: flex; flex-wrap: wrap; gap: 12px 40px; margin: 0 0 6px; }
-  dt { font-size: 0.82rem; color: var(--muted); }
-  dd { margin: 0; font-size: 1.15rem; color: var(--ink); }
-  .chart-empty { border: 1px dashed var(--line); border-radius: 8px; padding: 28px 24px; margin: 0 0 1rem;
+  dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  dd { margin: 0; font-size: 1.15rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .chart-empty { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 28px 24px; margin: 0 0 1rem;
                  min-height: 220px; display: flex; flex-direction: column; justify-content: center; }
   .chart-empty p { max-width: 62ch; color: var(--text-2); margin: 0; }
-  .chart-empty .ce-title { font-family: var(--serif); font-size: 1.15rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .chart-empty .ce-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
   .two { display: grid; gap: 0 64px; }
   @media (min-width: 900px) { .two { grid-template-columns: 1.7fr 1fr; } }
   .bench { list-style: none; padding: 0; margin: 0 0 1rem; border-top: 1px solid var(--line); }
   .bench li { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
-  .bw { font-size: 1.25rem; min-width: 4.2rem; color: var(--ink); }
+  .bw { font-size: 1.15rem; font-weight: 300; min-width: 4.2rem; color: var(--ink); font-variant-numeric: tabular-nums; }
   .mentions { padding-left: 1.1rem; }
   .pager { display: flex; justify-content: space-between; gap: 24px; margin-top: 4.5rem; padding-top: 22px; border-top: 1px solid var(--line); }
-  .pager a { display: flex; flex-direction: column; text-decoration: none; font-family: var(--serif); font-size: 1.25rem; color: var(--ink); }
+  .pager a { display: flex; flex-direction: column; text-decoration: none; font-size: 1.25rem; font-weight: 300; color: var(--ink); }
   .pager a:hover { color: var(--accent-ink); }
   .pager .nx { text-align: right; }
-  .pager .muted { font-family: var(--font); font-size: 0.82rem; }
+  .pager .muted { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
 </style>

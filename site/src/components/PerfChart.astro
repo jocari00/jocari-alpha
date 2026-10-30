@@ -17,8 +17,8 @@ const summary = last > 0
 ---
 <figure class="perf">
   <div class="perf-head">
-    <figcaption>{t.chartTitle}</figcaption>
-    <div class="ranges" role="group" aria-label="Range">
+    <figcaption class="label">{t.chartTitle}</figcaption>
+    <div class="segmented" role="group" aria-label={lang === "en" ? "Period" : "Periodo"}>
       {(["ytd", "1y", "all"] as const).map((r) => (
         <button type="button" data-range={r} aria-pressed={r === "all" ? "true" : "false"}>{t.range[r]}</button>
       ))}
@@ -29,8 +29,10 @@ const summary = last > 0
     <li><span class="key key-2" aria-hidden="true"></span>{t.benchmark}</li>
     <li><span class="key key-dash" aria-hidden="true"></span>{t.estimated}</li>
   </ul>
-  <div class="chart" role="img" aria-label={summary} data-chart={payload}>
+  <div class="chart" role="img" aria-label={summary} data-chart={payload}
+       data-note={lang === "en" ? `Live tracking from ${fmtDate(lang, liveStart)}` : `Seguimiento live desde el ${fmtDate(lang, liveStart)}`}>
     <div class="tip" hidden></div>
+    <div class="note" hidden aria-hidden="true"><span class="note-text"></span></div>
   </div>
   <details class="data-table">
     <summary>{t.dataTable}</summary>
@@ -39,9 +41,9 @@ const summary = last > 0
         <thead><tr><th>{t.date}</th><th class="num">{t.portfolio}</th><th class="num">{t.benchmark}</th><th></th></tr></thead>
         <tbody>
           {data.dates.map((d, i) => (
-            <tr><td>{fmtDate(lang, d)}</td><td class="num">{num(lang, data.portfolio[i])}</td>
+            <tr><td class="mono">{fmtDate(lang, d)}</td><td class="num">{num(lang, data.portfolio[i])}</td>
                 <td class="num">{num(lang, data.benchmark[i])}</td>
-                <td>{i === 0 ? "" : d <= liveStart ? t.estimated : t.live}</td></tr>
+                <td class="mono">{i === 0 ? "" : d <= liveStart ? t.estimated : t.live}</td></tr>
           ))}
         </tbody>
       </table>
@@ -112,6 +114,24 @@ const summary = last > 0
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paint);
     chart.timeScale().fitContent();
 
+    // Annotation: a leader line and label at the live start (only once live points exist).
+    const noteEl = el.querySelector<HTMLElement>(".note")!;
+    const placeNote = () => {
+      const k = d.dates.indexOf(d.liveStart);
+      if (k < 0 || k === d.dates.length - 1) { noteEl.hidden = true; return; }
+      const x = chart.timeScale().timeToCoordinate(d.liveStart);
+      const y = series.pEst.priceToCoordinate(d.portfolio[k]);
+      if (x == null || y == null) { noteEl.hidden = true; return; }
+      noteEl.hidden = false;
+      noteEl.style.left = `${x}px`;
+      noteEl.style.height = `${Math.max(y - 6, 0)}px`;
+      noteEl.querySelector(".note-text")!.textContent = el.dataset.note!;
+      noteEl.classList.toggle("flip", x > el.clientWidth * 0.6);
+    };
+    chart.timeScale().subscribeVisibleTimeRangeChange(placeNote);
+    new ResizeObserver(() => requestAnimationFrame(placeNote)).observe(el);
+    requestAnimationFrame(placeNote);
+
     // Tooltip: date + both values (text in ink, identity from the key swatch).
     chart.subscribeCrosshairMove((param) => {
       if (!param.time || !param.point) { tip.hidden = true; return; }
@@ -142,13 +162,9 @@ const summary = last > 0
 </script>
 
 <style>
-  .perf { margin: 0 0 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 20px 14px; }
+  .perf { margin: 0 0 1rem; padding: 18px 0 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   .perf-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
-  figcaption { font-family: var(--serif); font-size: 1.15rem; color: var(--ink); }
-  .ranges { display: flex; gap: 4px; }
-  .ranges button { font: inherit; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;
-                   background: none; border: 1px solid var(--line); color: var(--text-2); }
-  .ranges button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); border-color: var(--muted); }
+  figcaption { margin: 0; }
   .legend { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; padding: 0; margin: 10px 0 6px;
             font-size: 0.875rem; color: var(--text-2); }
   .legend li { display: flex; align-items: center; gap: 6px; }
@@ -156,7 +172,11 @@ const summary = last > 0
   :global(.key-1) { border-color: var(--series-1); }
   :global(.key-2) { border-color: var(--series-2); }
   .key-dash { border-top: 2px dashed var(--muted); }
-  .chart { position: relative; height: 320px; }
+  .chart { position: relative; height: 340px; }
+  .note { position: absolute; top: 0; z-index: 2; width: 0; border-left: 1px solid var(--muted); pointer-events: none; }
+  .note-text { position: absolute; top: 0; left: 8px; white-space: nowrap; font-family: var(--mono); font-size: 11px;
+               color: var(--text-2); background: var(--bg); padding: 0 4px; }
+  .note.flip .note-text { left: auto; right: 8px; }
   @media (max-width: 600px) { .chart { height: 260px; } }
   .tip { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; background: var(--surface);
          border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 0.8rem; color: var(--text);

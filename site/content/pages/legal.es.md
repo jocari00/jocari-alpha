@@ -5,7 +5,7 @@ title: Aviso legal
 **Jocari Alpha** es un proyecto personal sin ánimo de lucro, publicado con fines educativos e
 ilustrativos.
 
-- **Solo carteras modelo.** Las carteras que se muestran son modelos. No son cuentas reales y no se
+- **Solo carteras modelo.** Las carteras que se muestran son modelos, no cuentas reales, y no se
   gestiona dinero de terceros.
 - **No es asesoramiento.** Nada de lo que aparece en esta web constituye asesoramiento en materia de
   inversión, una recomendación personalizada ni una oferta o invitación a comprar o vender ningún
@@ -15,11 +15,11 @@ ilustrativos.
 - **Las rentabilidades pasadas no garantizan rentabilidades futuras.** El valor de las inversiones
   puede subir o bajar y es posible recuperar menos de lo invertido.
 - **Datos estimados.** Las cifras anteriores al 30 de octubre de 2026 están estimadas con los pesos
-  objetivo actuales y se indican como tales. No son un historial real.
+  objetivo actuales, se indican como tales y no constituyen un historial real.
 - **Exactitud.** Los datos proceden de fuentes públicas y pueden contener errores o retrasos. No se
   garantiza su exactitud ni que estén completos, y no se asume responsabilidad por decisiones
   tomadas a partir de esta web.
 - **Los nombres de los fondos y las marcas** pertenecen a sus propietarios. Su mención no implica
   relación con ellos ni respaldo por su parte.
-- **No se ofrecen servicios.** El único contacto es el perfil de LinkedIn del autor, para consultas
-  profesionales.
+- **Servicios.** La web no ofrece ningún servicio; el único contacto es el perfil de LinkedIn del autor,
+  para consultas profesionales.

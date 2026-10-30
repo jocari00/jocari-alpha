@@ -11,10 +11,10 @@ dataviz script and must not be swapped for the UI accent.
 | Surface (raised rows, inputs) | `#FBFAF6` | *(est.)* |
 | Ink | `#16181D` | near-black text *(est.)* |
 | Secondary text | `#5F6168` | *(est.)* |
-| Muted / meta | `#8E8F94` | *(est.)* |
+| Muted / meta | `#6B6D73` | screenshot ≈ `#8E8F94` *(est.)*, darkened to reach 4.5:1 on the page |
 | Hairline | `#E3DED3` | 1px dividers *(est.)* |
 | Accent (UI) | `#1F2E57` | navy: active tab, selected button *(est.)* |
-| Attention | `#B7791F` | amber, always with an icon *(est.)* |
+| Attention | `#B7791F` fill / `#8F5B12` text | amber, always with an icon; text darkened for 4.5:1 |
 | Series: portfolio / benchmark | `#2A5FA8` / `#B08A3E` | validated; dark mode `#5B8FD6` / `#AD8636` |
 | Gain / loss | `#1C7440` / `#B3362B` | with a sign, never colour alone |
 

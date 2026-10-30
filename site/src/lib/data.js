@@ -66,3 +66,17 @@ export function composition(portfolio, instruments) {
   const order = SECTIONS.map((s) => s.id);
   return Object.values(bySection).sort((a, b) => order.indexOf(a.block) - order.indexOf(b.block));
 }
+
+/** Decision log across portfolios, newest first; identical entries on the same date are merged. */
+export function loadDecisionLog() {
+  const byKey = {};
+  for (const id of PORTFOLIO_IDS) {
+    const p = loadYaml(read(`decisions/${id}.yaml`));
+    for (const d of p.decisions) {
+      const date = d.effective_date instanceof Date ? d.effective_date.toISOString().slice(0, 10) : String(d.effective_date);
+      const key = `${date}|${d.kind}`;
+      (byKey[key] ??= { date, kind: d.kind, portfolios: [] }).portfolios.push(p.name);
+    }
+  }
+  return Object.values(byKey).sort((a, b) => b.date.localeCompare(a.date));
+}

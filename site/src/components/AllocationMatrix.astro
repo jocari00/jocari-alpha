@@ -33,7 +33,7 @@ const w = (x: number) => (x ? weight(lang, x) : "–");
         </tr>
         {b.funds.map((f: any) => (
           <tr class="fund-row">
-            <th scope="row" class="fund-col">{f.name} <span class="cls">{f.share_class}</span></th>
+            <th scope="row" class="fund-col">{f.name} <span class="cls">{f.share_class} · {f.isin}</span></th>
             {portfolios.map((p) => <td class={`num ${p.weights[f.isin] ? "" : "zero"}`}>{w(p.weights[f.isin] ?? 0)}</td>)}
           </tr>
         ))}
@@ -53,14 +53,16 @@ const w = (x: number) => (x ? weight(lang, x) : "–");
   .matrix-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .matrix { min-width: 760px; font-size: 0.9rem; }
   .matrix th, .matrix td { padding: 9px 12px; border-bottom: 1px dashed var(--line); }
-  .matrix thead th { font-size: 0.85rem; color: var(--ink); font-weight: 600; border-bottom: 1px solid var(--ink); white-space: nowrap; }
+  .matrix thead th { color: var(--ink); border-bottom: 1px solid var(--ink); white-space: nowrap; }
   .fund-col { text-align: left; position: sticky; left: 0; background: var(--bg); min-width: 280px; }
   .block-row th, .block-row td { background: var(--surface-2); font-weight: 600; color: var(--ink);
                                  border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); }
   .block-row th { font-weight: 600; }
   .asset { display: block; font-weight: 400; font-size: 0.78rem; color: var(--muted); }
-  .fund-row th { font-weight: 400; padding-left: 24px; color: var(--text); }
-  .cls { color: var(--muted); font-size: 0.85em; }
+  .fund-row th { font-family: var(--font); font-size: 0.9rem; letter-spacing: 0; text-transform: none; font-weight: 400; padding-left: 24px; color: var(--text); }
+  .block-row th { font-family: var(--font); font-size: 0.9rem; letter-spacing: 0; text-transform: none; }
+  tfoot th { font-family: var(--font); font-size: 0.9rem; letter-spacing: 0; text-transform: none; }
+  .cls { display: block; font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0; }
   .zero { color: var(--muted); }
   tfoot th, tfoot td { font-weight: 600; color: var(--ink); border-top: 1px solid var(--ink); border-bottom: 0; }
   @media (max-width: 720px) { .fund-col { min-width: 210px; } }
