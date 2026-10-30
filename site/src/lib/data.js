@@ -39,16 +39,30 @@ export function loadResults() {
   return { base_date: iso(tr.base_date), live_start: iso(tr.live_start), portfolios: {}, pending: true };
 }
 
-/** Composition by block (target weights; weights are static). */
+/** Sections shown on the site: the four equity blocks form one "Equity" section. */
+export const SECTIONS = [
+  { id: "liquidity_short_term", blocks: ["liquidity_short_term"] },
+  { id: "credit_flexible", blocks: ["credit_flexible"] },
+  { id: "defensive_alternatives", blocks: ["defensive_alternatives"] },
+  { id: "equity", blocks: ["equity_index", "equity_value", "equity_emerging", "equity_technology"] },
+  { id: "aggressive_alternatives", blocks: ["aggressive_alternatives"] },
+];
+export const sectionOf = (block) => SECTIONS.find((s) => s.blocks.includes(block)).id;
+
+export function sectionLabel(instruments, id) {
+  return id === "equity" ? "Equity" : instruments.blocks[id].label;
+}
+
+/** Composition by section (target weights; weights are static). */
 export function composition(portfolio, instruments) {
-  const byBlock = {};
+  const bySection = {};
   for (const [isin, w] of Object.entries(portfolio.weights)) {
     const f = instruments.funds[isin];
-    (byBlock[f.block] ??= { block: f.block, label: instruments.blocks[f.block].label,
-                            asset_class: f.asset_class, weight: 0, funds: [] });
-    byBlock[f.block].weight += w;
-    byBlock[f.block].funds.push({ isin, name: f.name, share_class: f.share_class, weight: w });
+    const id = sectionOf(f.block);
+    (bySection[id] ??= { block: id, label: sectionLabel(instruments, id), asset_class: f.asset_class, weight: 0, funds: [] });
+    bySection[id].weight += w;
+    bySection[id].funds.push({ isin, name: f.name, share_class: f.share_class, weight: w });
   }
-  const order = Object.keys(instruments.blocks);
-  return Object.values(byBlock).sort((a, b) => order.indexOf(a.block) - order.indexOf(b.block));
+  const order = SECTIONS.map((s) => s.id);
+  return Object.values(bySection).sort((a, b) => order.indexOf(a.block) - order.indexOf(b.block));
 }

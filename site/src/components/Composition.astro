@@ -23,7 +23,7 @@ const shade = (b: any, i: number) => {
           <summary>
             <span class="sw" style={`background:${shade(b, i)}`}></span>
             <span class="bl">{blockLabel(lang, b.block, b.label)}</span>
-            <span class="ac">{b.asset_class === "equity" ? t.equity : t.fixedIncome}</span>
+            <span class="ac">{b.block === "equity" ? "" : b.asset_class === "equity" ? t.equity : t.fixedIncome}</span>
             <span class="w figure">{weight(lang, b.weight)}</span>
           </summary>
           {blockNotes?.[b.block] && <p class="note">{blockNotes[b.block]}</p>}

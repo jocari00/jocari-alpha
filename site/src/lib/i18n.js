@@ -69,6 +69,7 @@ export const BLOCK_LABELS = {
     credit_flexible: "Crédito y renta fija flexible",
     defensive_alternatives: "Alternativos defensivos",
     aggressive_alternatives: "Alternativos agresivos",
+    equity: "Renta variable",
     equity_index: "Renta variable global (indexada)",
     equity_value: "Renta variable value",
     equity_emerging: "Renta variable emergente",

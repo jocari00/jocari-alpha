@@ -1,17 +1,18 @@
 ---
 // Target weights of every fund in every portfolio: portfolios in columns, funds in rows,
-// grouped by block with a subtotal row per block. Zero weights show as a dash.
+// grouped by section (equity is one section) with a subtotal row per section. Zero weights show as a dash.
 import { T, blockLabel, weight } from "../lib/i18n.js";
+import { SECTIONS, sectionLabel } from "../lib/data.js";
 interface Props { lang: "en" | "es"; portfolios: any[]; instruments: any }
 const { lang, portfolios, instruments } = Astro.props;
 const t = T[lang];
-const order = Object.keys(instruments.blocks);
-const blocks = order.map((block) => {
+const blocks = SECTIONS.map((sec) => {
   const funds = Object.values(instruments.funds as Record<string, any>)
-    .filter((f) => f.block === block && portfolios.some((p) => p.weights[f.isin]));
+    .filter((f) => sec.blocks.includes(f.block) && portfolios.some((p) => p.weights[f.isin]))
+    .sort((a, b) => sec.blocks.indexOf(a.block) - sec.blocks.indexOf(b.block));
   const total = (p: any) => funds.reduce((s, f) => s + (p.weights[f.isin] ?? 0), 0);
-  return { block, label: blockLabel(lang, block, instruments.blocks[block].label),
-           asset: instruments.blocks[block].asset_class, funds, totals: portfolios.map(total) };
+  return { block: sec.id, label: blockLabel(lang, sec.id, sectionLabel(instruments, sec.id)),
+           asset: instruments.blocks[sec.blocks[0]].asset_class, funds, totals: portfolios.map(total) };
 }).filter((b) => b.funds.length);
 const w = (x: number) => (x ? weight(lang, x) : "–");
 ---
@@ -27,7 +28,7 @@ const w = (x: number) => (x ? weight(lang, x) : "–");
       <tbody>
         <tr class="block-row">
           <th scope="rowgroup" class="fund-col">{b.label}
-            <span class="asset">{b.asset === "equity" ? t.equity : t.fixedIncome}</span></th>
+            {b.block !== "equity" && <span class="asset">{b.asset === "equity" ? t.equity : t.fixedIncome}</span>}</th>
           {b.totals.map((x) => <td class="num">{w(x)}</td>)}
         </tr>
         {b.funds.map((f: any) => (
