@@ -2,8 +2,9 @@
 import Base from "../layouts/Base.astro";
 import Spectrum from "../components/Spectrum.astro";
 import ReturnsTable from "../components/ReturnsTable.astro";
+import AllocationMatrix from "../components/AllocationMatrix.astro";
 import { T } from "../lib/i18n.js";
-import { loadPortfolios, loadResults, PORTFOLIO_IDS } from "../lib/data.js";
+import { loadPortfolios, loadResults, loadInstruments, PORTFOLIO_IDS } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
@@ -15,4 +16,7 @@ const results = loadResults();
   <Spectrum lang={lang} portfolios={loadPortfolios()} results={results} />
   <h2>{lang === "en" ? "Since the start" : "Desde el inicio"}</h2>
   <ReturnsTable lang={lang} results={results} ids={PORTFOLIO_IDS} />
+  <h2>{lang === "en" ? "Target weights by portfolio" : "Pesos objetivo por cartera"}</h2>
+  <p class="muted">{t.staticWeights}</p>
+  <AllocationMatrix lang={lang} portfolios={loadPortfolios()} instruments={loadInstruments()} />
 </Base>

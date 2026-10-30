@@ -1,15 +1,17 @@
 ---
 // Auto-filled block for a monthly commentary: each portfolio vs its benchmark over the month.
 import { T, pct, href } from "../lib/i18n.js";
+import { loadPortfolios } from "../lib/data.js";
 interface Props { lang: "en" | "es"; results: any; ids: string[]; period: string }
 const { lang, results, ids, period } = Astro.props;
 const t = T[lang];
 const sign = (x: number) => (x > 0 ? "pos" : x < 0 ? "neg" : "");
 // The period whose end falls in this month (for October 2026: the estimated YTD to 30 Oct).
+const names = Object.fromEntries(loadPortfolios().map((p) => [p.id, p.name]));
 const rows = ids.map((id) => {
   const r = results.portfolios[id];
   const per = r?.periods?.find((x: any) => x.to.slice(0, 7) === period);
-  return { id, name: r?.name ?? id, per };
+  return { id, name: names[id], per };
 });
 const any = rows.some((r) => r.per);
 ---

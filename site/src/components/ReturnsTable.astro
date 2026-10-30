@@ -1,14 +1,16 @@
 ---
 // Latest figures for every portfolio vs its benchmark (since the base, YTD).
 import { T, href, pct, fmtDate } from "../lib/i18n.js";
+import { loadPortfolios } from "../lib/data.js";
 interface Props { lang: "en" | "es"; results: any; ids: string[] }
 const { lang, results, ids } = Astro.props;
 const t = T[lang];
 const sign = (x: number) => (x > 0 ? "pos" : x < 0 ? "neg" : "");
+const names = Object.fromEntries(loadPortfolios().map((p) => [p.id, p.name]));
 const rows = ids.map((id) => {
   const r = results.portfolios[id];
   const n = r?.dates?.length ?? 0;
-  if (n < 2) return { id, name: r?.name ?? id, valued: false };
+  if (n < 2) return { id, name: names[id], valued: false };
   const p = r.portfolio[n - 1] / 100 - 1, b = r.benchmark[n - 1] / 100 - 1;
   return { id, name: r.name, valued: true, p, b, x: p - b, asof: r.dates[n - 1],
            estimated: r.dates[n - 1] <= results.live_start };
