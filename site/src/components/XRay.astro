@@ -49,7 +49,7 @@ const DUR_MAX = 6;
           <figure class="cell regions">
             <figcaption>{en ? "Regions" : "Regiones"}</figcaption>
             {[[en ? "Portfolio" : "Cartera", eq.regions, "p"], ["MSCI ACWI", bm.regions, "b"]].map(([label, r, cls]) => (
-              <div class="stack-row">
+              <div class="stack-row" style={`--i:${cls === "b" ? 1 : 0}`}>
                 <span class="row-label">{label}</span>
                 <span class={`stack ${cls}`} role="img" aria-label={`${label}: ${REGIONS.map(([k, n]) => `${n} ${p0((r as any)[k])}`).join(", ")}`}>
                   {REGIONS.map(([k, n], i) => (
@@ -78,8 +78,8 @@ const DUR_MAX = 6;
           <figure class="cell sectors">
             <figcaption>{en ? "Sectors" : "Sectores"}</figcaption>
             <ul class="bars">
-              {sectors.map((s) => (
-                <li>
+              {sectors.map((s, i) => (
+                <li style={`--i:${i}`}>
                   <span class="bar-name">{s.name}</span>
                   <span class="bar-pair" aria-label={`${s.name}: ${en ? "portfolio" : "cartera"} ${p0(s.p)}, ACWI ${p0(s.b)}`}>
                     <span class="sb p" style={`width:${(s.p / sMax) * 100}%`}></span>
@@ -233,13 +233,15 @@ const DUR_MAX = 6;
   .stack.q { margin-top: 4px; }
 
   .source { font-size: 0.8rem; color: var(--muted); margin-top: 2rem; max-width: 90ch; }
-  /* Grow-in when the section first scrolls into view (only once, only with motion allowed; the
+  /* Grow-in: each figure animates when it scrolls into view (once, only with motion allowed; the
      script adds .pre, so without JavaScript everything is simply shown). */
-  .xray.pre :is(.stack, .sb, .scale-fill) { transform: scaleX(0); transform-origin: left center; }
-  .xray.pre .sq { opacity: 0; }
-  .xray.in :is(.stack, .sb, .scale-fill) { transform: none; transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1); }
-  .xray.in .sb.b { transition-delay: 90ms; }
-  .xray.in .sq { opacity: 1; transition: opacity 500ms ease-out 200ms; }
+  .xray.pre .cell:not(.in) :is(.stack, .sb, .scale-fill) { transform: scaleX(0); }
+  .xray.pre .cell:not(.in) :is(.sq, .ladder li, .val-p) { opacity: 0; }
+  :is(.stack, .sb, .scale-fill) { transform-origin: left center; }
+  .cell.in :is(.stack, .sb, .scale-fill) { transition: transform 1100ms cubic-bezier(0.2, 0.7, 0.2, 1); transition-delay: calc(var(--i, 0) * 90ms); }
+  .cell.in .sb.b { transition-delay: calc(var(--i, 0) * 90ms + 120ms); }
+  .cell.in :is(.sq, .ladder li, .val-p) { transition: opacity 700ms ease-out 250ms; }
+  .cell.in .ladder li.on { transition-delay: 700ms; }
 
   @media (max-width: 520px) {
     .stack-row { grid-template-columns: 1fr; gap: 4px; }
@@ -251,13 +253,15 @@ const DUR_MAX = 6;
 <script>
   const sec = document.querySelector<HTMLElement>(".xray");
   if (sec && "IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    const r = sec.getBoundingClientRect();
-    if (r.top > innerHeight) {          // only animate if it starts below the fold
+    const all = [...sec.querySelectorAll<HTMLElement>(".cell")];
+    const cells = all.filter((c) => c.getBoundingClientRect().top > innerHeight * 0.85);
+    all.filter((c) => !cells.includes(c)).forEach((c) => c.classList.add("in"));   // already on screen: no animation
+    if (cells.length) {
       sec.classList.add("pre");
-      const io = new IntersectionObserver(([e]) => {
-        if (e.isIntersecting) { sec.classList.add("in"); sec.classList.remove("pre"); io.disconnect(); }
-      }, { threshold: 0.15 });
-      io.observe(sec);
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+      }, { threshold: 0.45 });
+      cells.forEach((c) => io.observe(c));
     }
   }
 </script>
