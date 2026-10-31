@@ -13,7 +13,7 @@ portfolios:
 # Brief rationale for each building block.
 blocks:
   liquidity_short_term: "Very short-dated and floating-rate fixed income. Its role is stability: with short maturities, rising rates barely hurt it and soon feed through to its return."
-  credit_flexible: "Actively managed credit, chosen for the quality of the companies rather than the bond itself. It aims for more than short-dated fixed income without taking on long maturities."
+  credit_flexible: "Actively managed credit, chosen for the quality of the companies rather than the bond itself. It aims for more than short-dated fixed income with moderate maturities. Overall, the portfolios' fixed income keeps a short duration of two to three years: with inflation and rates still uncertain, this limits what further rate rises can cost, at the price of giving up part of the gain if rates fall."
   defensive_alternatives: "Strategies whose results do not depend on the direction of equities or rates: absolute-return fixed income, event-driven special situations and catastrophe bonds. They are there to decorrelate the portfolio."
   aggressive_alternatives: "Equity absolute-return funds: they buy and sell shares to seek results whether the market rises or falls. They add equity exposure with less dependence on the cycle."
   equity: "A low-cost core tracking the developed-world index, completed with value investing, which diversifies against an index heavily concentrated in large US technology companies, and with emerging markets, where much of the world's growth happens. Only the Aggressive portfolio adds a technology fund. The mix is the same in every portfolio that holds equity; what changes is its weight."
