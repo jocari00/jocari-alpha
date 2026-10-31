@@ -61,6 +61,15 @@ const kicker = lang === "en"
     <section>
       <h2>{t.composition}</h2>
       <Composition lang={lang} blocks={composition(p, ins)} fundNotes={ed.funds} blockNotes={ed.blocks} />
+      <h2>{t.commentary}</h2>
+      {ed.portfolios?.[id]
+        ? <p>{ed.portfolios[id]}</p>
+        : <p class="placeholder">{t.comingSoon}</p>}
+      {mentions.length > 0 && (
+        <ul class="mentions">{mentions.map((c) => (
+          <li><a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a>: {c.portfolios[id]}</li>
+        ))}</ul>
+      )}
     </section>
     <aside>
       <h2>{t.benchmarkMix}</h2>
@@ -72,15 +81,6 @@ const kicker = lang === "en"
       </ul>
       <p class="muted"><a href={href(lang, "methodology/")}>{lang === "en" ? "How the benchmark is built" : "Cómo se construye el benchmark"}</a></p>
 
-      <h2>{t.commentary}</h2>
-      {ed.portfolios?.[id]
-        ? <p>{ed.portfolios[id]}</p>
-        : <p class="placeholder">{t.comingSoon}</p>}
-      {mentions.length > 0 && (
-        <ul class="mentions">{mentions.map((c) => (
-          <li><a href={href(lang, `commentary/${c.slug}/`)}>{fmtPeriod(lang, c.period)}</a>: {c.portfolios[id]}</li>
-        ))}</ul>
-      )}
     </aside>
   </div>
 
