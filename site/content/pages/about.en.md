@@ -5,7 +5,7 @@ linkedin: "https://www.linkedin.com/in/jordi-carreras-ribot/"
 ---
 
 I'm Jordi, a student of the double degree in Artificial Intelligence and Business Administration at
-ESADE, a data consultant and a CFA Level I candidate. Jocari Alpha is where I show how I think about
+ESADE. Jocari Alpha is where I show how I think about
 asset allocation, fund analysis and data engineering.
 
 ## How this started
@@ -15,7 +15,3 @@ kept a formal record of target weights or decisions. In October 2026 I wrote dow
 portfolios and built this site to track them in the open. The chart starts on 1 January 2026,
 estimated with today's weights and marked as *Estimated*. From the first commit onward, every
 decision is recorded in the repository before it takes effect.
-
-## Personal positions
-
-<span class="placeholder">Declaration of personal positions in the funds: coming soon.</span>
