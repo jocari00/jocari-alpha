@@ -39,7 +39,7 @@ funds:
   LU0329355670: "Emerging markets with a quantitative model combining valuation, quality and momentum."   # Robeco QI Emerging Markets Active Equities
   LU1213836080: "Global technology with valuation discipline."   # Fidelity Global Technology
 
-# Profile cards on the home page (DRAFT to review): an objective and a short description per
+# Profile cards on the home page (approved): an objective and a short description per
 # portfolio. Describe the portfolio itself, never who it is for, and avoid return figures.
 profiles:
   defensive:
