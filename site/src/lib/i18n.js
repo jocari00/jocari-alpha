@@ -5,6 +5,7 @@ export const LOCALE = { en: "en-GB", es: "es-ES" };
 export const T = {
   en: {
     tagline: "Model portfolios & market commentary",
+    description: "Five model portfolios, from all bonds to all equity, each measured every month against a passive benchmark. Decisions are recorded publicly before they take effect.",
     nav: { home: "Home", portfolios: "Portfolios", commentary: "Market commentary",
            methodology: "Methodology", about: "About", legal: "Legal" },
     switchTo: "Español", switchLabel: "Ver en español",
@@ -34,6 +35,7 @@ export const T = {
   },
   es: {
     tagline: "Carteras modelo y comentario de mercado",
+    description: "Cinco carteras modelo, de todo bonos a todo bolsa, medidas cada mes frente a un benchmark pasivo. Las decisiones se registran públicamente antes de entrar en vigor.",
     nav: { home: "Inicio", portfolios: "Carteras", commentary: "Comentario de mercado",
            methodology: "Metodología", about: "Sobre mí", legal: "Aviso legal" },
     switchTo: "English", switchLabel: "View in English",

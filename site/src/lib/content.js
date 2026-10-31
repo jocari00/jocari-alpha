@@ -28,6 +28,7 @@ export function listCommentary(lang) {
     const excerpt = plain.length > 220 ? plain.slice(0, 220).replace(/\s\S*$/, "") + "…" : plain;
     return { slug, period: String(fm.period), kind: fm.kind, title: fm.title || "", written: fm.written ? String(fm.written).slice(0, 10) : null,
              portfolios: fm.portfolios || {}, filled: isFilled(mod), Content: mod.Content, excerpt,
+             headings: (mod.getHeadings?.() ?? []).filter((h) => h.depth === 2),
              shownLang, fallback: shownLang !== lang };
   }).sort((a, b) => sortKey(b.period).localeCompare(sortKey(a.period)));
 }
@@ -40,3 +41,18 @@ export function getPage(name, lang) {
 export function getEditorial(lang) {
   return editorial[`../../content/editorial/${lang}.md`].frontmatter;
 }
+
+/** Short label for a period: big part ("OCT", "Q3"/"T3") and the year. */
+export function periodShort(lang, period) {
+  const q = /^(\d{4})-Q([1-4])$/.exec(String(period));
+  if (q) return { big: lang === "en" ? `Q${q[2]}` : `T${q[2]}`, year: q[1] };
+  const m = /^(\d{4})-(\d{2})$/.exec(String(period));
+  const mon = new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "es-ES", { month: "short", timeZone: "UTC" })
+    .format(new Date(`${period}-01T00:00:00Z`)).replace(".", "");
+  return { big: mon.toUpperCase(), year: m ? m[1] : "" };
+}
+
+/** "Monthly note" / "Quarterly note". */
+export const kindLabel = (lang, kind) => kind === "quarterly"
+  ? (lang === "en" ? "Quarterly note" : "Nota trimestral")
+  : (lang === "en" ? "Monthly note" : "Nota mensual");

@@ -233,6 +233,14 @@ const DUR_MAX = 6;
   .stack.q { margin-top: 4px; }
 
   .source { font-size: 0.8rem; color: var(--muted); margin-top: 2rem; max-width: 90ch; }
+  /* Grow-in when the section first scrolls into view (only once, only with motion allowed; the
+     script adds .pre, so without JavaScript everything is simply shown). */
+  .xray.pre :is(.stack, .sb, .scale-fill) { transform: scaleX(0); transform-origin: left center; }
+  .xray.pre .sq { opacity: 0; }
+  .xray.in :is(.stack, .sb, .scale-fill) { transform: none; transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .xray.in .sb.b { transition-delay: 90ms; }
+  .xray.in .sq { opacity: 1; transition: opacity 500ms ease-out 200ms; }
+
   @media (max-width: 520px) {
     .stack-row { grid-template-columns: 1fr; gap: 4px; }
     .bars li { grid-template-columns: 6.5rem 1fr 4.8rem; gap: 8px; }
@@ -240,3 +248,16 @@ const DUR_MAX = 6;
     .box { grid-template-columns: auto repeat(3, 38px); grid-template-rows: 22px repeat(3, 38px); }
   }
 </style>
+<script>
+  const sec = document.querySelector<HTMLElement>(".xray");
+  if (sec && "IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const r = sec.getBoundingClientRect();
+    if (r.top > innerHeight) {          // only animate if it starts below the fold
+      sec.classList.add("pre");
+      const io = new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) { sec.classList.add("in"); sec.classList.remove("pre"); io.disconnect(); }
+      }, { threshold: 0.15 });
+      io.observe(sec);
+    }
+  }
+</script>

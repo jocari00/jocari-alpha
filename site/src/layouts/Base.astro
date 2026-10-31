@@ -12,6 +12,10 @@ const t = T[lang];
 const other = lang === "en" ? "es" : "en";
 const pageTitle = title ? `${title} | Jocari Alpha` : `Jocari Alpha | ${t.tagline}`;
 const { pending } = loadResults();
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const pageUrl = new URL(href(lang, path), Astro.site).href;
+const ogImage = new URL(`${base}og.png`, Astro.site).href;
+const metaDescription = description ?? t.description;
 const nav = [
   ["portfolios/", t.nav.portfolios], ["commentary/", t.nav.commentary],
   ["methodology/", t.nav.methodology], ["about/", t.nav.about],
@@ -24,7 +28,19 @@ const current = path.split("/")[0] + (path ? "/" : "");
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{pageTitle}</title>
-  <meta name="description" content={description ?? t.tagline} />
+  <meta name="description" content={metaDescription} />
+  <link rel="canonical" href={pageUrl} />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Jocari Alpha" />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={metaDescription} />
+  <meta property="og:url" content={pageUrl} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Jocari Alpha: five model portfolios, from all bonds to all equity" />
+  <meta property="og:locale" content={lang === "en" ? "en_GB" : "es_ES"} />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="alternate" hreflang="en" href={href("en", path)} />
   <link rel="alternate" hreflang="es" href={href("es", path)} />
   <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}favicon.svg`} type="image/svg+xml" />
@@ -100,6 +116,14 @@ const current = path.split("/")[0] + (path ? "/" : "");
 </html>
 
 <style is:global>
+  /* Page-to-page crossfade (cross-document view transitions; browsers without support just navigate).
+     The header and footer keep their place so only the content changes. */
+  @media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 220ms; }
+  }
+  .topbar { view-transition-name: topbar; }
+  .site-footer { view-transition-name: site-footer; }
   /* Tokens from DESIGN.md (values marked est. there are estimates from the reference screenshot). */
   :root {
     color-scheme: light;
@@ -167,13 +191,13 @@ const current = path.split("/")[0] + (path ? "/" : "");
   .brand { display: flex; align-items: center; gap: 11px; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.015em; color: var(--ink);
            text-decoration: none; margin-right: auto; }
   .brand:hover { color: var(--ink); }
-  nav { display: flex; }
-  nav ul { display: flex; flex-wrap: wrap; gap: 0 28px; list-style: none; margin: 0; padding: 0; }
-  nav li { display: flex; }
-  nav a { display: flex; align-items: center; color: var(--text-2); text-decoration: none; font-size: 0.875rem;
+  .topbar nav { display: flex; }
+  .topbar nav ul { display: flex; flex-wrap: wrap; gap: 0 28px; list-style: none; margin: 0; padding: 0; }
+  .topbar nav li { display: flex; }
+  .topbar nav a { display: flex; align-items: center; color: var(--text-2); text-decoration: none; font-size: 0.875rem;
           border-bottom: 2px solid transparent; margin-bottom: -1px; }
-  nav a:hover { color: var(--ink); }
-  nav a[aria-current="page"] { color: var(--ink); font-weight: 500; border-bottom-color: var(--accent); }
+  .topbar nav a:hover { color: var(--ink); }
+  .topbar nav a[aria-current="page"] { color: var(--ink); font-weight: 500; border-bottom-color: var(--accent); }
   .tools { display: flex; align-items: center; gap: 16px; }
   .lang { font-size: 0.85rem; color: var(--text-2); text-decoration: none; }
   .lang:hover { color: var(--ink); }
@@ -181,9 +205,9 @@ const current = path.split("/")[0] + (path ? "/" : "");
            width: 30px; height: 30px; display: grid; place-items: center; cursor: pointer; }
   @media (max-width: 760px) {
     .bar { min-height: 56px; }
-    nav { order: 3; width: 100%; overflow-x: auto; }
-    nav ul { flex-wrap: nowrap; gap: 0 22px; }
-    nav a { padding: 12px 0; white-space: nowrap; }
+    .topbar nav { order: 3; width: 100%; overflow-x: auto; }
+    .topbar nav ul { flex-wrap: nowrap; gap: 0 22px; }
+    .topbar nav a { padding: 12px 0; white-space: nowrap; }
   }
 
   /* Page head */
