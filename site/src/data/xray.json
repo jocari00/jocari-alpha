@@ -1,0 +1,239 @@
+{
+ "asOf": "2026-10-31",
+ "manAsOf": "2026-06-30",
+ "fixedIncome": {
+  "defensive": {
+   "duration": 1.98,
+   "quality": "BB",
+   "qualitySplit": {
+    "high": 0.0,
+    "medium": 80.6,
+    "low": 19.4
+   }
+  },
+  "conservative": {
+   "duration": 2.46,
+   "quality": "BB",
+   "qualitySplit": {
+    "high": 0.0,
+    "medium": 80.7,
+    "low": 19.3
+   }
+  },
+  "balanced": {
+   "duration": 2.98,
+   "quality": "BB",
+   "qualitySplit": {
+    "high": 0.0,
+    "medium": 74.8,
+    "low": 25.2
+   }
+  },
+  "dynamic": {
+   "duration": 2.86,
+   "quality": "BB",
+   "qualitySplit": {
+    "high": 0.0,
+    "medium": 77.6,
+    "low": 22.4
+   }
+  }
+ },
+ "equity": {
+  "conservative": {
+   "regions": {
+    "americas": 52.46,
+    "europe": 24.6,
+    "asia": 22.94
+   },
+   "sectors": {
+    "Basic Materials": 7.34,
+    "Consumer Cyclical": 9.38,
+    "Financial Services": 13.12,
+    "Real Estate": 1.51,
+    "Communication Services": 5.43,
+    "Energy": 12.08,
+    "Industrials": 10.22,
+    "Technology": 27.0,
+    "Consumer Defensive": 4.33,
+    "Healthcare": 7.73,
+    "Utilities": 1.86
+   },
+   "style": [
+    [
+     23,
+     25,
+     17
+    ],
+    [
+     8,
+     8,
+     4
+    ],
+    [
+     8,
+     4,
+     2
+    ]
+   ],
+   "pe": 13.99,
+   "pb": 2.51
+  },
+  "balanced": {
+   "regions": {
+    "americas": 52.82,
+    "europe": 25.37,
+    "asia": 21.81
+   },
+   "sectors": {
+    "Basic Materials": 7.54,
+    "Consumer Cyclical": 9.5,
+    "Financial Services": 12.86,
+    "Real Estate": 1.52,
+    "Communication Services": 5.37,
+    "Energy": 12.6,
+    "Industrials": 10.34,
+    "Technology": 26.29,
+    "Consumer Defensive": 4.35,
+    "Healthcare": 7.75,
+    "Utilities": 1.88
+   },
+   "style": [
+    [
+     23,
+     25,
+     17
+    ],
+    [
+     8,
+     8,
+     4
+    ],
+    [
+     8,
+     4,
+     2
+    ]
+   ],
+   "pe": 14.03,
+   "pb": 2.5
+  },
+  "dynamic": {
+   "regions": {
+    "americas": 52.71,
+    "europe": 25.12,
+    "asia": 22.18
+   },
+   "sectors": {
+    "Basic Materials": 7.48,
+    "Consumer Cyclical": 9.46,
+    "Financial Services": 12.94,
+    "Real Estate": 1.52,
+    "Communication Services": 5.39,
+    "Energy": 12.43,
+    "Industrials": 10.3,
+    "Technology": 26.52,
+    "Consumer Defensive": 4.34,
+    "Healthcare": 7.75,
+    "Utilities": 1.88
+   },
+   "style": [
+    [
+     23,
+     25,
+     17
+    ],
+    [
+     8,
+     8,
+     4
+    ],
+    [
+     8,
+     4,
+     2
+    ]
+   ],
+   "pe": 14.02,
+   "pb": 2.5
+  },
+  "aggressive": {
+   "regions": {
+    "americas": 50.93,
+    "europe": 25.22,
+    "asia": 23.85
+   },
+   "sectors": {
+    "Basic Materials": 7.19,
+    "Consumer Cyclical": 9.24,
+    "Financial Services": 11.34,
+    "Real Estate": 1.65,
+    "Communication Services": 6.2,
+    "Energy": 11.86,
+    "Industrials": 9.63,
+    "Technology": 30.77,
+    "Consumer Defensive": 3.8,
+    "Healthcare": 6.71,
+    "Utilities": 1.62
+   },
+   "style": [
+    [
+     21,
+     26,
+     17
+    ],
+    [
+     8,
+     8,
+     4
+    ],
+    [
+     8,
+     5,
+     2
+    ]
+   ],
+   "pe": 14.17,
+   "pb": 2.52
+  }
+ },
+ "benchmarkEquity": {
+  "regions": {
+   "americas": 68.72,
+   "europe": 14.65,
+   "asia": 16.63
+  },
+  "sectors": {
+   "Basic Materials": 3.33,
+   "Consumer Cyclical": 8.42,
+   "Financial Services": 16.39,
+   "Real Estate": 1.5,
+   "Communication Services": 7.06,
+   "Energy": 4.39,
+   "Industrials": 9.88,
+   "Technology": 32.75,
+   "Consumer Defensive": 4.84,
+   "Healthcare": 9.12,
+   "Utilities": 2.31
+  },
+  "style": [
+   [
+    24,
+    34,
+    24
+   ],
+   [
+    5,
+    8,
+    4
+   ],
+   [
+    0,
+    0,
+    0
+   ]
+  ],
+  "pe": 16.26,
+  "pb": 3.22
+ }
+}

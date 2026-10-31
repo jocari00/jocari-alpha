@@ -1,0 +1,242 @@
+---
+// "Inside the portfolio": what the equity and fixed-income sleeves hold, from Morningstar X-Ray
+// reports (src/data/xray.json). Equity is shown next to the MSCI ACWI; fixed income on its own.
+// Alternatives are excluded from both. Composition only: no returns.
+import xray from "../data/xray.json";
+import { fmtDate } from "../lib/i18n.js";
+interface Props { lang: "en" | "es"; id: string }
+const { lang, id } = Astro.props;
+const en = lang === "en";
+const eq = (xray.equity as Record<string, any>)[id];
+const fi = (xray.fixedIncome as Record<string, any>)[id];
+const bm = xray.benchmarkEquity as any;
+const n1 = (x: number) => new Intl.NumberFormat(en ? "en-GB" : "es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(x);
+const p0 = (x: number) => `${Math.round(x)}${en ? "%" : " %"}`;
+
+const REGIONS = [["americas", en ? "Americas" : "Américas"], ["europe", en ? "Europe" : "Europa"], ["asia", en ? "Asia" : "Asia"]] as const;
+const SECTOR_NAMES: Record<string, [string, string]> = {
+  "Technology": ["Technology", "Tecnología"], "Financial Services": ["Financials", "Financiero"], "Energy": ["Energy", "Energía"],
+  "Industrials": ["Industrials", "Industria"], "Consumer Cyclical": ["Consumer cyclical", "Consumo cíclico"], "Healthcare": ["Healthcare", "Salud"],
+  "Basic Materials": ["Materials", "Materiales"], "Communication Services": ["Communication", "Comunicación"],
+  "Consumer Defensive": ["Consumer defensive", "Consumo defensivo"], "Real Estate": ["Real estate", "Inmobiliario"], "Utilities": ["Utilities", "Servicios públicos"],
+};
+let sectors: { name: string; p: number; b: number }[] = [];
+let sMax = 1;
+if (eq) {
+  const keys = Object.keys(eq.sectors).sort((a, b) => (eq.sectors[b] + bm.sectors[b]) - (eq.sectors[a] + bm.sectors[a]));
+  const top = keys.slice(0, 6), rest = keys.slice(6);
+  sectors = top.map((k) => ({ name: SECTOR_NAMES[k][en ? 0 : 1], p: eq.sectors[k], b: bm.sectors[k] }));
+  sectors.push({ name: en ? "Other" : "Resto", p: rest.reduce((s, k) => s + eq.sectors[k], 0), b: rest.reduce((s, k) => s + bm.sectors[k], 0) });
+  sMax = Math.max(...sectors.flatMap((s) => [s.p, s.b]));
+}
+const STYLE_COLS = en ? ["Value", "Blend", "Growth"] : ["Value", "Mixto", "Growth"];
+const STYLE_ROWS = en ? ["Large", "Mid", "Small"] : ["Grande", "Mediana", "Pequeña"];
+const LADDER = ["AAA", "AA", "A", "BBB", "BB", "B", "CCC"];
+const DUR_MAX = 6;
+---
+{(eq || fi) && (
+  <section class="xray" aria-labelledby="xray-h">
+    <h2 id="xray-h">{en ? "Inside the portfolio" : "Dentro de la cartera"}</h2>
+
+    {eq && (
+      <div class="panel">
+        <h3>{en ? "Equity" : "Renta variable"} <span class="vs">{en ? "compared with the MSCI ACWI" : "frente al MSCI ACWI"}</span></h3>
+        <ul class="xkey">
+          <li><i class="k-p"></i>{en ? "Portfolio" : "Cartera"}</li>
+          <li><i class="k-b"></i>MSCI ACWI</li>
+        </ul>
+        <div class="grid">
+          <figure class="cell regions">
+            <figcaption>{en ? "Regions" : "Regiones"}</figcaption>
+            {[[en ? "Portfolio" : "Cartera", eq.regions, "p"], ["MSCI ACWI", bm.regions, "b"]].map(([label, r, cls]) => (
+              <div class="stack-row">
+                <span class="row-label">{label}</span>
+                <span class={`stack ${cls}`} role="img" aria-label={`${label}: ${REGIONS.map(([k, n]) => `${n} ${p0((r as any)[k])}`).join(", ")}`}>
+                  {REGIONS.map(([k, n], i) => (
+                    <span class={`seg s${i}`} style={`flex-basis:${(r as any)[k]}%`}><span>{(r as any)[k] >= 20 ? `${n} ` : ""}{p0((r as any)[k])}</span></span>
+                  ))}
+                </span>
+              </div>
+            ))}
+            <p class="fine">{en ? "Americas, Europe and Asia from darkest to lightest." : "Américas, Europa y Asia, de más oscuro a más claro."}</p>
+          </figure>
+
+          <figure class="cell valuation">
+            <figcaption>{en ? "Valuation" : "Valoración"}</figcaption>
+            <div class="vals">
+              {[["PER", eq.pe, bm.pe, en ? "Price / earnings" : "Precio / beneficio"], [en ? "P/B" : "P/VC", eq.pb, bm.pb, en ? "Price / book value" : "Precio / valor contable"]].map(([k, p, b, long]) => (
+                <div class="val">
+                  <span class="val-k" title={long as string}>{k}</span>
+                  <span class="val-p">{n1(p as number)}</span>
+                  <span class="val-b">ACWI {n1(b as number)}</span>
+                </div>
+              ))}
+            </div>
+            <p class="fine">{en ? "Lower means the companies are priced more cheaply relative to their earnings and book value." : "Cuanto más bajo, más baratas cotizan las compañías respecto a sus beneficios y su valor contable."}</p>
+          </figure>
+
+          <figure class="cell sectors">
+            <figcaption>{en ? "Sectors" : "Sectores"}</figcaption>
+            <ul class="bars">
+              {sectors.map((s) => (
+                <li>
+                  <span class="bar-name">{s.name}</span>
+                  <span class="bar-pair" aria-label={`${s.name}: ${en ? "portfolio" : "cartera"} ${p0(s.p)}, ACWI ${p0(s.b)}`}>
+                    <span class="sb p" style={`width:${(s.p / sMax) * 100}%`}></span>
+                    <span class="sb b" style={`width:${(s.b / sMax) * 100}%`}></span>
+                  </span>
+                  <span class="bar-v"><b>{p0(s.p)}</b><span>{p0(s.b)}</span></span>
+                </li>
+              ))}
+            </ul>
+          </figure>
+
+          <figure class="cell style">
+            <figcaption>{en ? "Style and size" : "Estilo y tamaño"}</figcaption>
+            <div class="boxes">
+              {[[en ? "Portfolio" : "Cartera", eq.style, "p"], ["MSCI ACWI", bm.style, "b"]].map(([label, grid, cls]) => (
+                <div class="box-wrap">
+                  <span class="row-label">{label}</span>
+                  <div class={`box ${cls}`} role="table" aria-label={label as string}>
+                    <span></span>{STYLE_COLS.map((c) => <span class="ax">{c}</span>)}
+                    {(grid as number[][]).map((row, i) => (<>
+                      <span class="ax ax-r">{STYLE_ROWS[i]}</span>
+                      {row.map((v) => <span class={`sq ${v / 35 > 0.55 ? "dk" : ""}`} style={`--a:${Math.min(v / 35, 1)}`}>{v}</span>)}
+                    </>))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </figure>
+        </div>
+      </div>
+    )}
+
+    {fi && (
+      <div class="panel">
+        <h3>{en ? "Fixed income" : "Renta fija"}</h3>
+        <div class="grid fi">
+          <figure class="cell">
+            <figcaption>{en ? "Effective duration" : "Duración efectiva"}</figcaption>
+            <p class="big">{n1(fi.duration)} <span>{en ? "years" : "años"}</span></p>
+            <div class="scale" role="img" aria-label={`${n1(fi.duration)} ${en ? "years on a scale from 0 to 6" : "años en una escala de 0 a 6"}`}>
+              <span class="scale-fill" style={`width:${(fi.duration / DUR_MAX) * 100}%`}></span>
+              {Array.from({ length: DUR_MAX + 1 }, (_, i) => <span class="tick" style={`left:${(i / DUR_MAX) * 100}%`}><span>{i}</span></span>)}
+            </div>
+            <p class="fine">{en ? "How much the price moves when rates change: about 1% for each year of duration per one-point move in rates."
+                                 : "Cuánto se mueve el precio si cambian los tipos: alrededor de un 1 % por cada año de duración por cada punto de tipos."}</p>
+          </figure>
+
+          <figure class="cell">
+            <figcaption>{en ? "Average credit quality" : "Calidad crediticia media"}</figcaption>
+            <p class="big">{fi.quality}</p>
+            <ol class="ladder" aria-label={en ? "Rating scale" : "Escala de calificación"}>
+              {LADDER.map((r, i) => <li class={`${r === fi.quality ? "on" : ""} ${i === 4 ? "hy" : ""}`}>{r}</li>)}
+            </ol>
+            <p class="ladder-legend"><span>{en ? "Investment grade" : "Grado de inversión"}</span><span>{en ? "High yield" : "High yield"}</span></p>
+          </figure>
+
+          <figure class="cell">
+            <figcaption>{en ? "Funds by credit quality" : "Fondos por calidad crediticia"}</figcaption>
+            <span class="stack q" role="img" aria-label={`${en ? "High" : "Alta"} ${p0(fi.qualitySplit.high)}, ${en ? "medium" : "media"} ${p0(fi.qualitySplit.medium)}, ${en ? "low" : "baja"} ${p0(fi.qualitySplit.low)}`}>
+              {[["high", en ? "High" : "Alta"], ["medium", en ? "Medium" : "Media"], ["low", en ? "Low" : "Baja"]].map(([k, n], i) =>
+                fi.qualitySplit[k] > 0 && <span class={`seg s${i}`} style={`flex-basis:${fi.qualitySplit[k]}%`}><span>{n} {p0(fi.qualitySplit[k])}</span></span>)}
+            </span>
+            <p class="fine">{en ? "Share of fixed income by each fund's average rating: high (AAA–AA), medium (A–BBB), low (BB and below)."
+                                 : "Peso de la renta fija según la calificación media de cada fondo: alta (AAA-AA), media (A-BBB) y baja (BB o inferior)."}</p>
+          </figure>
+        </div>
+      </div>
+    )}
+
+    <p class="source">
+      {en ? `Source: Morningstar X-Ray, as of ${fmtDate(lang, xray.asOf)}.${fi ? ` Man Global Investment Grade Opportunities, for which Morningstar has no holdings, from its factsheet as of ${fmtDate(lang, xray.manAsOf)}.` : ""} Alternative funds are excluded.`
+          : `Fuente: Morningstar X-Ray, a ${fmtDate(lang, xray.asOf)}.${fi ? ` Man Global Investment Grade Opportunities, del que Morningstar no tiene cartera, con su ficha a ${fmtDate(lang, xray.manAsOf)}.` : ""} Excluye los fondos alternativos.`}
+    </p>
+  </section>
+)}
+
+<style>
+  .xray { margin-top: 4.5rem; padding-top: 0.5rem; }
+  .panel { border-top: 1px solid var(--line); padding: 22px 0 8px; margin-top: 1.25rem; }
+  h3 { font-size: 1.3rem; font-weight: 300; margin: 0 0 14px; color: var(--ink); }
+  .vs { font-size: 0.9rem; color: var(--text-2); margin-left: 8px; }
+  .xkey { display: flex; gap: 22px; list-style: none; padding: 0; margin: 0 0 22px; font-size: 0.85rem; color: var(--text-2); }
+  .xkey li { display: flex; align-items: center; white-space: nowrap; margin: 0; }
+  .xkey i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 8px; vertical-align: -1px; }
+  .xkey .k-p { background: var(--series-1); } .xkey .k-b { background: var(--series-2); }
+  .grid { display: grid; gap: 40px 56px; }
+  @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } .grid.fi { grid-template-columns: repeat(3, 1fr); } }
+  figure { margin: 0; }
+  figcaption { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .fine { font-size: 0.82rem; color: var(--text-2); margin: 12px 0 0; max-width: 46ch; }
+  .row-label { font-size: 0.85rem; color: var(--text-2); }
+
+  /* stacked bars */
+  .stack-row { display: grid; grid-template-columns: 5.5rem 1fr; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .stack { display: flex; height: 34px; gap: 2px; border-radius: 4px; overflow: hidden; }
+  .seg { display: flex; align-items: center; min-width: 0; padding: 0 8px; font-size: 0.78rem; white-space: nowrap; overflow: hidden; }
+  .seg span { overflow: hidden; text-overflow: ellipsis; }
+  .stack.p .s0 { background: var(--series-1); color: var(--on-accent); }
+  .stack.p .s1 { background: color-mix(in srgb, var(--series-1) 55%, var(--bg)); color: var(--ink); }
+  .stack.p .s2 { background: color-mix(in srgb, var(--series-1) 25%, var(--bg)); color: var(--ink); }
+  .stack.b .s0 { background: var(--series-2); color: var(--on-accent); }
+  .stack.b .s1 { background: color-mix(in srgb, var(--series-2) 55%, var(--bg)); color: var(--ink); }
+  .stack.b .s2 { background: color-mix(in srgb, var(--series-2) 25%, var(--bg)); color: var(--ink); }
+  .stack.q .s0 { background: var(--accent); color: var(--on-accent); }
+  .stack.q .s1 { background: color-mix(in srgb, var(--accent) 45%, var(--bg)); color: var(--ink); }
+  .stack.q .s2 { background: color-mix(in srgb, var(--accent) 15%, var(--bg)); color: var(--ink); }
+
+  /* valuation */
+  .vals { display: flex; gap: 48px; }
+  .val { display: flex; flex-direction: column; }
+  .val-k { font-size: 0.85rem; color: var(--text-2); }
+  .val-p { font-size: clamp(2.4rem, 5vw, 3rem); font-weight: 300; line-height: 1.05; color: var(--ink); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .val-b { font-size: 0.9rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .val-b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--series-2); margin-right: 6px; }
+
+  /* sectors */
+  .bars { list-style: none; padding: 0; margin: 0; }
+  .bars li { display: grid; grid-template-columns: 8.5rem 1fr 5.5rem; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .bar-name { font-size: 0.9rem; color: var(--ink); }
+  .bar-pair { display: flex; flex-direction: column; gap: 3px; }
+  .sb { display: block; height: 8px; border-radius: 0 2px 2px 0; }
+  .sb.p { background: var(--series-1); } .sb.b { background: var(--series-2); height: 5px; }
+  .bar-v { display: flex; justify-content: flex-end; gap: 10px; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .bar-v b { font-weight: 500; color: var(--ink); } .bar-v span { color: var(--text-2); }
+
+  /* style boxes */
+  .boxes { display: flex; flex-wrap: wrap; gap: 32px; }
+  .box-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .box { display: grid; grid-template-columns: auto repeat(3, 46px); grid-auto-rows: 46px; gap: 3px; align-items: stretch; }
+  .box .ax { font-size: 0.72rem; color: var(--muted); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; }
+  .box .ax-r { justify-content: flex-end; align-items: center; padding: 0 8px 0 0; }
+  .box > span:first-child { min-height: 0; }
+  .box { grid-template-rows: 22px repeat(3, 46px); }
+  .sq { display: grid; place-items: center; font-size: 0.82rem; border-radius: 3px; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .box.p .sq { background: color-mix(in srgb, var(--series-1) calc(var(--a) * 100%), var(--surface)); }
+  .box.b .sq { background: color-mix(in srgb, var(--series-2) calc(var(--a) * 100%), var(--surface)); }
+  .sq.dk { color: var(--on-accent); }
+
+  /* fixed income */
+  .big { font-size: clamp(2.6rem, 6vw, 3.4rem); font-weight: 300; line-height: 1; margin: 0 0 18px; color: var(--ink); letter-spacing: -0.02em; }
+  .big span { font-size: 1rem; color: var(--text-2); letter-spacing: 0; }
+  .scale { position: relative; height: 10px; background: var(--grid); border-radius: 5px; margin-bottom: 30px; }
+  .scale-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 5px; }
+  .tick { position: absolute; top: 14px; transform: translateX(-50%); font-size: 0.72rem; color: var(--muted); }
+  .ladder { display: flex; list-style: none; padding: 0; margin: 0; gap: 3px; }
+  .ladder li { flex: 1; text-align: center; font-size: 0.75rem; padding: 7px 0; border-radius: 3px; background: var(--grid); color: var(--text-2); }
+  .ladder li.hy { margin-left: 8px; }
+  .ladder li.on { background: var(--accent); color: var(--on-accent); font-weight: 500; }
+  .ladder-legend { display: grid; grid-template-columns: 4fr 3fr; gap: 8px; margin: 6px 0 0; font-size: 0.72rem; color: var(--muted); }
+  .ladder-legend span:last-child { padding-left: 8px; }
+  .stack.q { margin-top: 4px; }
+
+  .source { font-size: 0.8rem; color: var(--muted); margin-top: 2rem; max-width: 90ch; }
+  @media (max-width: 520px) {
+    .stack-row { grid-template-columns: 1fr; gap: 4px; }
+    .bars li { grid-template-columns: 6.5rem 1fr 4.8rem; gap: 8px; }
+    .seg { font-size: 0.7rem; padding: 0 5px; }
+    .box { grid-template-columns: auto repeat(3, 38px); grid-template-rows: 22px repeat(3, 38px); }
+  }
+</style>

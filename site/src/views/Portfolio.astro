@@ -5,6 +5,7 @@ import Composition from "../components/Composition.astro";
 import { T, href, pct, fmtDate, fmtPeriod, weight } from "../lib/i18n.js";
 import { loadPortfolios, loadResults, loadInstruments, composition, PORTFOLIO_IDS } from "../lib/data.js";
 import { listCommentary, getEditorial } from "../lib/content.js";
+import XRay from "../components/XRay.astro";
 interface Props { lang: "en" | "es"; id: string }
 const { lang, id } = Astro.props;
 const t = T[lang];
@@ -82,6 +83,8 @@ const kicker = lang === "en"
       )}
     </aside>
   </div>
+
+  <XRay lang={lang} id={id} />
 
   <nav class="pager" aria-label={t.nav.portfolios}>
     {prev ? <a href={href(lang, `portfolios/${prev.id}/`)}><span class="muted">{lang === "en" ? "Less equity" : "Menos renta variable"}</span>{prev.name}</a> : <span></span>}
