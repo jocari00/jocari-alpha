@@ -125,3 +125,8 @@ def test_not_found_rows_are_skipped_quietly(tmp_path):
     rows = _base_rows() + [(DWS, "", "", "(d) Cierre 2025"), (GOVT, "—", "", "(c) Cierre mes anterior")]
     _, report, _ = compute(_write(tmp_path, rows), date(2026, 11, 2))
     assert report["rejected_rows"] == []
+
+
+def test_header_with_unit_in_brackets():
+    from jocari.compute import _pick
+    assert _pick(["ISIN", "Fecha VL", "VL (EUR)"], ("vl", "nav")) == 2

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -41,7 +42,8 @@ class NavData:
 
 
 def _pick(header: list[str], names: tuple[str, ...]) -> int:
-    low = [h.strip().lower() for h in header]
+    # A trailing unit in brackets is ignored: "VL (EUR)" matches "vl".
+    low = [re.sub(r"\s*\([^)]*\)$", "", h.strip()).lower() for h in header]
     for n in names:
         if n in low:
             return low.index(n)
