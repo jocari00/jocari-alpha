@@ -77,6 +77,8 @@ def read_nav_csv(path: Path, asset_class: dict[str, str], today: date) -> NavDat
         isin = r[ci].strip().upper()
         if isin not in asset_class:
             continue
+        if r[cn].strip() in ("", "—", "-") and r[cd].strip() in ("", "—", "-"):
+            continue  # a "not found" row the routine records on purpose: nothing to read
         try:
             d, v = _date(r[cd]), _number(r[cn])
         except ValueError:

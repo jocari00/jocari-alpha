@@ -118,3 +118,10 @@ def test_public_results_only_change_when_a_valuation_closes(tmp_path):
     rows += [(i, "06/11/2026", "100,50", "cierre semana") for i in FUNDS + ETFS]  # a week later, same month
     main(["compute", "--nav", str(_write(tmp_path, rows)), "--asof", "2026-11-08", "--json", str(out)])
     assert out.read_text() == first
+
+
+def test_not_found_rows_are_skipped_quietly(tmp_path):
+    # The routine records "NOT FOUND" rows with no date and no NAV; they are not errors.
+    rows = _base_rows() + [(DWS, "", "", "(d) Cierre 2025"), (GOVT, "—", "", "(c) Cierre mes anterior")]
+    _, report, _ = compute(_write(tmp_path, rows), date(2026, 11, 2))
+    assert report["rejected_rows"] == []
