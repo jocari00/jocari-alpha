@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import PerfChart from "../components/PerfChart.astro";
 import Composition from "../components/Composition.astro";
-import { T, href, pct, fmtDate, fmtPeriod, weight } from "../lib/i18n.js";
+import { T, href, pct, pp, fmtDate, fmtPeriod, weight } from "../lib/i18n.js";
 import { loadPortfolios, loadResults, loadInstruments, composition, PORTFOLIO_IDS } from "../lib/data.js";
 import { listCommentary, getEditorial } from "../lib/content.js";
 import XRay from "../components/XRay.astro";
@@ -18,12 +18,12 @@ const ins = loadInstruments();
 const ed = getEditorial(lang);
 const mentions = listCommentary(lang).filter((c) => c.portfolios?.[id]);
 const sign = (x: number) => (x > 0 ? "pos" : x < 0 ? "neg" : "");
-let ytd = null as null | { p: number; b: number; asof: string; estimated: boolean };
+let ytd = null as null | { p: number; b: number; asof: string };
 if (n >= 2) {
   const year = r.dates[n - 1].slice(0, 4);
   const i = Math.max(r.dates.findLastIndex((d: string) => d < `${year}-01-01`), 0);
   ytd = { p: r.portfolio[n - 1] / r.portfolio[i] - 1, b: r.benchmark[n - 1] / r.benchmark[i] - 1,
-          asof: r.dates[n - 1], estimated: r.dates[n - 1] <= results.live_start };
+          asof: r.dates[n - 1] };
 }
 const benchNames: Record<string, string> = { IE00B6R52259: "MSCI ACWI", IE00B3VTMJ91: "€ Govt Bond 1-3yr", IE00BH04FZ00: "EUR Corporate 1-3yr" };
 const idx = PORTFOLIO_IDS.indexOf(id);
@@ -38,9 +38,9 @@ const kicker = lang === "en"
       <p class="hero-num">{pct(lang, ytd.p)}</p>
       <dl>
         <div><dt>{lang === "en" ? "Return this year" : "Rentabilidad en el año"}</dt>
-             <dd>{lang === "en" ? "to" : "a"} {fmtDate(lang, ytd.asof)}{ytd.estimated ? ` (${t.estimated.toLowerCase()})` : ""}</dd></div>
+             <dd>{lang === "en" ? "to" : "a"} {fmtDate(lang, ytd.asof)}</dd></div>
         <div><dt>{t.benchmark}</dt><dd>{pct(lang, ytd.b)}</dd></div>
-        <div><dt>{t.difference}</dt><dd class={sign(ytd.p - ytd.b)}>{pct(lang, ytd.p - ytd.b)}</dd></div>
+        <div><dt>{t.difference}</dt><dd class={sign(ytd.p - ytd.b)}>{pp(lang, ytd.p - ytd.b)}</dd></div>
       </dl>
     </div>
   )}

@@ -27,7 +27,7 @@ export const T = {
     commentary: "Commentary", comingSoon: "Commentary coming soon.",
     portfolioComment: "About this portfolio", blockComment: "Why each block", fundComment: "Each fund's role",
     latestCommentary: "Latest market commentary", allCommentary: "All commentary",
-    written: "Written", period: "Period", monthReturns: "Returns for the period",
+    written: "Written", period: "Period", monthReturns: "Returns for the month", ytdTo: "Year to date to",
     onlyIn: (l) => `This commentary is only available in ${l === "es" ? "Spanish" : "English"}.`,
     ladder: "Risk ladder", ladderNote: "Each profile is described in general terms. None of them is a recommendation for any particular person.",
     profiles: "The five profiles", notValued: "First figures after the October close",
@@ -57,7 +57,7 @@ export const T = {
     commentary: "Comentario", comingSoon: "Comentario próximamente.",
     portfolioComment: "Sobre esta cartera", blockComment: "Por qué cada bloque", fundComment: "El papel de cada fondo",
     latestCommentary: "Último comentario de mercado", allCommentary: "Todos los comentarios",
-    written: "Escrito", period: "Periodo", monthReturns: "Rentabilidades del periodo",
+    written: "Escrito", period: "Periodo", monthReturns: "Rentabilidades del mes", ytdTo: "En el año, a",
     onlyIn: (l) => `Este comentario solo está disponible en ${l === "es" ? "español" : "inglés"}.`,
     ladder: "Escalera de riesgo", ladderNote: "Cada perfil se describe de forma general. Ninguno es una recomendación para una persona concreta.",
     profiles: "Los cinco perfiles", notValued: "Primeras cifras tras el cierre de octubre",
@@ -94,6 +94,12 @@ export const pct = (lang, x, signed = true) =>
   x == null ? "–" : minus(new Intl.NumberFormat(LOCALE[lang], {
     style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2,
     signDisplay: signed ? "exceptZero" : "auto" }).format(x));
+
+// A difference between two returns, in percentage points.
+export const pp = (lang, x) =>
+  x == null ? "–" : minus(new Intl.NumberFormat(LOCALE[lang], {
+    minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(x * 100))
+    + (lang === "en" ? "\u00a0pp" : "\u00a0p.\u00a0p.");
 
 export const num = (lang, x, d = 2) =>
   minus(new Intl.NumberFormat(LOCALE[lang], { minimumFractionDigits: d, maximumFractionDigits: d }).format(x));

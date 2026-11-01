@@ -71,7 +71,16 @@ const summary = last > 0
       autoSize: true,
       handleScale: { mouseWheel: false, pinch: true, axisPressedMouseMove: true },
       handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
-      localization: { locale: d.locale, priceFormatter: (p: number) => nf.format(p).replace("-", "\u2212") },
+      localization: { locale: d.locale, priceFormatter: (p: number) => nf.format(p).replace("-", "\u2212"),
+        // Axis ticks with the fewest decimals that keep them distinct (112, not 112.00).
+        tickmarksPriceFormatter: (ps: number[]) => {
+          for (const k of [0, 1, 2]) {
+            const f = new Intl.NumberFormat(d.locale, { minimumFractionDigits: k, maximumFractionDigits: k });
+            const out = ps.map((p) => f.format(p).replace("-", "\u2212"));
+            if (k === 2 || ps.every((p) => Math.abs(p * 10 ** k - Math.round(p * 10 ** k)) < 1e-9)) return out;
+          }
+          return [];
+        } },
       timeScale: { borderVisible: false, fixLeftEdge: true, fixRightEdge: true,
                    tickMarkFormatter: (t: any) => mf.format(toDate(t)) },
       rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.15, bottom: 0.1 } },

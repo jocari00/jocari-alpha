@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import MiniChart from "../components/MiniChart.astro";
 import ReturnsTable from "../components/ReturnsTable.astro";
 import AllocationMatrix from "../components/AllocationMatrix.astro";
-import { T, href, pct, fmtDate } from "../lib/i18n.js";
+import { T, href, pct, pp, fmtDate } from "../lib/i18n.js";
 import { loadPortfolios, loadResults, loadInstruments, PORTFOLIO_IDS } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
@@ -44,7 +44,7 @@ const lo = allVals.length ? Math.min(...allVals) : 100, hi = allVals.length ? Ma
             <span class="figs">
               <span class="ytd">{pct(lang, c.ytdP)}</span>
               <span class="bm">{t.benchmark} {pct(lang, c.ytdB)}</span>
-              <span class="bm">{t.difference} <span class={sign(c.ytdP - c.ytdB)}>{pct(lang, c.ytdP - c.ytdB)}</span></span>
+              <span class="bm">{t.difference} <span class={sign(c.ytdP - c.ytdB)}>{pp(lang, c.ytdP - c.ytdB)}</span></span>
             </span>
           </>) : (
             <span class="empty">{en ? `Chart after the close of ${fmtDate(lang, results.live_start)}` : `Gráfico tras el cierre del ${fmtDate(lang, results.live_start)}`}</span>

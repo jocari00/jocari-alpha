@@ -27,8 +27,11 @@ const kind = (k: string) => (k === "quarterly" ? (en ? "Quarterly note" : "Nota 
 // The cover's period returns (portfolio vs benchmark), when the month has a valuation.
 const bars = cover ? PORTFOLIO_IDS.map((id) => {
   const per = results.portfolios[id]?.periods?.find((x: any) => x.to.slice(0, 7) === cover.period);
-  return per ? { id, name: names[id], p: per.portfolio, b: per.benchmark } : null;
+  return per ? { id, name: names[id], p: per.portfolio, b: per.benchmark, per } : null;
 }).filter(Boolean) as any[] : [];
+// The estimated period runs from the base date, so its bars are a year to date, not the month.
+const barsLabel = bars.length === 0 ? "" : bars[0].per.type === "estimated"
+  ? `${t.ytdTo} ${fmtDate(lang, bars[0].per.to)}` : t.monthReturns;
 const maxAbs = Math.max(0.0001, ...bars.flatMap((x) => [Math.abs(x.p), Math.abs(x.b)]));
 const c = cover ? short(cover.period) : null;
 ---
@@ -39,8 +42,9 @@ const c = cover ? short(cover.period) : null;
       <span class="period"><span class="big">{c.big}</span><span class="year">{c.year}</span></span>
       <span class="title">{cover.title || (cover.filled ? "" : (en ? "What moved the portfolios this month" : "Qué movió las carteras este mes"))}</span>
       {cover.filled && cover.excerpt && <span class="excerpt">{cover.excerpt}</span>}
-      {bars.length > 0 && (
-        <span class="bars" aria-label={en ? "Return of each portfolio in the period, with its benchmark" : "Rentabilidad de cada cartera en el periodo, con su benchmark"}>
+      {bars.length > 0 && (<>
+        <span class="bars-label">{barsLabel}</span>
+        <span class="bars" aria-label={`${barsLabel}: ${en ? "return of each portfolio, with its benchmark" : "rentabilidad de cada cartera, con su benchmark"}`}>
           {bars.map((x) => (
             <span class="bar-row">
               <span class="bn">{x.name}</span>
@@ -52,7 +56,7 @@ const c = cover ? short(cover.period) : null;
             </span>
           ))}
         </span>
-      )}
+      </>)}
       <span class="cover-foot">{cover.written ? `${t.written} ${fmtDate(lang, cover.written)}` : (cover.filled ? "" : (en ? "Coming soon" : "Próximamente"))}
         <span class="read">{en ? "Open" : "Abrir"}</span></span>
     </a>
@@ -84,6 +88,7 @@ const c = cover ? short(cover.period) : null;
   .year { font-family: var(--font); font-size: 1rem; letter-spacing: 0.05em; opacity: 0.8; padding-bottom: 8px; }
   .title { font-size: clamp(1.2rem, 2.2vw, 1.55rem); font-weight: 300; line-height: 1.25; max-width: 30ch; }
   .excerpt { font-size: 0.95rem; line-height: 1.55; opacity: 0.85; max-width: 56ch; }
+  .bars-label { font-family: var(--font); font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; margin-bottom: -6px; }
   .bars { display: grid; gap: 6px; max-width: 460px; }
   .bar-row { display: grid; grid-template-columns: 7.5rem 1fr 4.5rem; align-items: center; gap: 10px; font-size: 0.8rem; }
   .track { position: relative; height: 8px; background: color-mix(in srgb, currentColor 14%, transparent); border-radius: 2px; }

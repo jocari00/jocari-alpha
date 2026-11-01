@@ -22,7 +22,6 @@ const toc = c.filled ? c.headings : [];
 <Base lang={lang} title={heading} path={`commentary/${slug}/`} heading={heading} lede={lede}
       description={c.excerpt || undefined}>
   <div slot="head" style="height:1rem"></div>
-  <p class="muted crumb"><a href={href(lang, "commentary/")}>{t.allCommentary}</a></p>
   {c.fallback && <p class="muted" role="note">{t.onlyIn(c.shownLang)}</p>}
 
   {c.kind === "monthly" && <PeriodReturns lang={lang} results={loadResults()} ids={PORTFOLIO_IDS} period={c.period} />}
@@ -50,11 +49,11 @@ const toc = c.filled ? c.headings : [];
 
   <nav class="pager" aria-label={t.nav.commentary}>
     {older ? <a href={href(lang, `commentary/${older.slug}/`)}><span class="muted">{en ? "Previous note" : "Nota anterior"}</span>{fmtPeriod(lang, older.period)}</a> : <span></span>}
+    <a class="all" href={href(lang, "commentary/")}>{t.allCommentary}</a>
     {newer ? <a class="nx" href={href(lang, `commentary/${newer.slug}/`)}><span class="muted">{en ? "Next note" : "Nota siguiente"}</span>{fmtPeriod(lang, newer.period)}</a> : <span></span>}
   </nav>
 </Base>
 <style>
-  .crumb { margin-top: 2rem; }
   .reading { display: grid; gap: 32px; }
   @media (min-width: 1000px) { .reading.has-toc { grid-template-columns: minmax(0, 1fr) 240px; gap: 72px; } }
   .toc { align-self: start; }
@@ -64,10 +63,15 @@ const toc = c.filled ? c.headings : [];
   .toc li a { display: block; padding: 6px 0 6px 14px; margin-left: -1px; border-left: 2px solid transparent; font-size: 0.9rem; color: var(--text-2); text-decoration: none; }
   .toc li a:hover { color: var(--accent-ink); border-left-color: var(--accent); }
   .toc li a.on { color: var(--ink); border-left-color: var(--accent); }
-  .pager { display: flex; justify-content: space-between; gap: 24px; margin-top: 4.5rem; padding-top: 22px; border-top: 1px solid var(--line); }
+  .pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 24px; margin-top: 4.5rem; padding-top: 22px; border-top: 1px solid var(--line); }
   .pager a { display: flex; flex-direction: column; text-decoration: none; font-size: 1.25rem; font-weight: 300; color: var(--ink); }
   .pager a:hover { color: var(--accent-ink); }
-  .pager .nx { text-align: right; }
+  .pager .nx { text-align: right; justify-self: end; }
+  .pager a.all { font-size: 0.9rem; font-weight: 400; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 640px) {
+    .pager { grid-template-columns: 1fr 1fr; }
+    .pager a.all { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
+  }
   .pager .muted { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
 </style>
 <script>

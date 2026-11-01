@@ -2,7 +2,7 @@
 // The risk ladder as the page's signature: five columns whose equity share climbs from 0% to
 // 100%, each with its year-to-date return against its benchmark. Columns on wide screens,
 // rows on phones. The bars grow once on load (skipped with prefers-reduced-motion).
-import { T, href, pct } from "../lib/i18n.js";
+import { T, href, pct, pp } from "../lib/i18n.js";
 import { getEditorial } from "../lib/content.js";
 interface Props { lang: "en" | "es"; portfolios: any[]; results: any }
 const { lang, portfolios, results } = Astro.props;
@@ -41,7 +41,7 @@ const label = (eq: number) => lang === "en" ? `${eq}% equity` : `${eq} % renta v
             <span class="label ylabel">{lang === "en" ? "Year to date" : "En el año"}</span>
             <span class="ytd">{pct(lang, p.pr)}</span>
             <span class="bm">{t.benchmark} {pct(lang, p.br)}</span>
-            <span class="dx">{t.difference} <span class={sign(p.x)}>{pct(lang, p.x)}</span></span>
+            <span class="dx">{t.difference} <span class={sign(p.x)}>{pp(lang, p.x)}</span></span>
           </span>
         )}
       </a>
