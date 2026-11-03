@@ -14,8 +14,10 @@ const en = lang === "en";
 ---
 <Base lang={lang}
       heading={en ? "Five model portfolios, from all bonds to all equity." : "Cinco carteras modelo, de todo bonos a todo bolsa."}
-      lede={en ? "Each one is measured every month against a passive mix with the same share of equity. Decisions are recorded publicly before they take effect."
-               : "Cada una se mide cada mes frente a una combinación pasiva con su mismo peso en renta variable. Las decisiones se registran públicamente antes de entrar en vigor."}>
+>
+  <p slot="head" class="lede">{en
+    ? <>Each one is measured every month against a passive mix with the same share of equity. Every decision is <a href="#decision-log">recorded publicly</a> before it takes effect.</>
+    : <>Cada una se mide cada mes frente a una combinación pasiva con su mismo peso en renta variable. Cada decisión se <a href="#decision-log">registra públicamente</a> antes de entrar en vigor.</>}</p>
   <div slot="head" class="cta-row">
     <a class="btn-primary" href={href(lang, "portfolios/")}>{en ? "See the portfolios" : "Ver las carteras"}</a>
   </div>
@@ -26,12 +28,13 @@ const en = lang === "en";
   <h2>{t.nav.commentary}</h2>
   <CommentaryShowcase lang={lang} />
 
-  <div class="log">
+  <div class="log" id="decision-log">
     <div>
       <h2>{en ? "Decision log" : "Registro de decisiones"}</h2>
       <p class="log-intro">{en
         ? "Every change to a portfolio's weights is committed to a public repository before it takes effect. The commit date is the proof that the decision came before the result."
         : "Cada cambio en los pesos de una cartera se registra en un repositorio público antes de entrar en vigor. La fecha del commit demuestra que la decisión fue anterior al resultado."}</p>
+      <p><a class="btn-quiet" href="https://github.com/jocari00/jocari-alpha/commits/main/decisions" rel="noopener">{en ? "See every commit on GitHub →" : "Ver todos los commits en GitHub →"}</a></p>
     </div>
     <DecisionTimeline lang={lang} />
   </div>
@@ -41,5 +44,7 @@ const en = lang === "en";
   .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 1.75rem; }
   .log { display: grid; gap: 8px 64px; margin-top: 1rem; }
   @media (min-width: 900px) { .log { grid-template-columns: 1fr 1.3fr; align-items: start; } .log :global(.timeline) { margin-top: 4.5rem; } }
+  .log { scroll-margin-top: 24px; }
+  @media (prefers-reduced-motion: no-preference) { :global(html) { scroll-behavior: smooth; } }
   .log-intro { color: var(--text-2); max-width: 46ch; }
 </style>
