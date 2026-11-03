@@ -11,8 +11,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from .config import load_instruments, load_portfolios
-from .rules import check_portfolio
+from .config import load_instruments, load_personal, load_portfolios
+from .rules import check_personal, check_portfolio
 
 
 def check_decisions(_a) -> int:
@@ -25,6 +25,10 @@ def check_decisions(_a) -> int:
         for e in errors:
             print(f"::error::{e}")
             failed = True
+    personal = load_personal()
+    for e in check_personal(personal, instruments) if personal else []:
+        print(f"::error::{e}")
+        failed = True
     print("decisions OK" if not failed else "decisions FAILED")
     return 1 if failed else 0
 
@@ -41,6 +45,12 @@ def compute_cmd(a) -> int:
                   f"benchmark {last['benchmark']:+.2%}  YTD {e['ytd']['portfolio']:+.2%} vs {e['ytd']['benchmark']:+.2%}")
         else:
             print(f"{e['name']:13s} not valued; missing: {report['portfolios'][pid]['missing']}")
+    pe = doc.get("personal")
+    if pe and pe["periods"]:
+        print(f"{pe['name']:13s} since {pe['start_date']}: portfolio {pe['since_start']['portfolio']:+.2%}  "
+              f"benchmark {pe['since_start']['benchmark']:+.2%}")
+    elif pe:
+        print(f"{pe['name']:13s} not valued yet; missing: {report['personal']['missing']}")
     for r in report["rejected_rows"]:
         print(f"::warning::rejected {r['isin']} {r['date']}: {r['reason']}")
     return 0

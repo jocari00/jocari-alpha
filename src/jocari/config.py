@@ -67,8 +67,7 @@ def load_benchmark_instruments(root: Path = ROOT) -> dict[str, dict]:
     return {b["isin"]: b for b in _read(root / "config" / "instruments.yaml")["benchmarks"]}
 
 
-def load_portfolio(pid: str, root: Path = ROOT) -> Portfolio:
-    raw = _read(root / "decisions" / f"{pid}.yaml")
+def _portfolio(raw: dict) -> Portfolio:
     decisions = [
         Decision(
             effective_date=d["effective_date"], kind=d.get("kind", "change"),
@@ -86,5 +85,26 @@ def load_portfolio(pid: str, root: Path = ROOT) -> Portfolio:
     )
 
 
+def load_portfolio(pid: str, root: Path = ROOT) -> Portfolio:
+    return _portfolio(_read(root / "decisions" / f"{pid}.yaml"))
+
+
 def load_portfolios(root: Path = ROOT) -> dict[str, Portfolio]:
     return {p: load_portfolio(p, root) for p in PORTFOLIOS}
+
+
+@dataclass
+class Personal:
+    portfolio: Portfolio
+    start_date: date
+    extra_funds: dict[str, dict]  # ISIN -> entry; funds outside config/instruments.yaml
+
+
+def load_personal(root: Path = ROOT) -> Personal | None:
+    """My own portfolio (personal/jordi.yaml), shown only on the About page."""
+    path = root / "personal" / "jordi.yaml"
+    if not path.exists():
+        return None
+    raw = _read(path)
+    return Personal(portfolio=_portfolio(raw), start_date=raw["start_date"],
+                    extra_funds={f["isin"]: f for f in raw.get("extra_funds", [])})

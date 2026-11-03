@@ -130,3 +130,27 @@ def test_not_found_rows_are_skipped_quietly(tmp_path):
 def test_header_with_unit_in_brackets():
     from jocari.compute import _pick
     assert _pick(["ISIN", "Fecha VL", "VL (EUR)"], ("vl", "nav")) == 2
+
+
+def test_personal_portfolio_from_its_start_date(tmp_path):
+    # My portfolio: base 2026-11-06, first valuation 2026-11-30. Robeco (7.5%) +10%, the rest flat
+    # -> +0.75%. Benchmark: ACWI (75%) +4% -> +3%.
+    from jocari.config import load_personal
+    personal = load_personal()
+    isins = sorted({i for d in personal.portfolio.decisions for i in d.weights} | set(ETFS))
+    robeco = "LU0329355670"
+    rows = _base_rows()
+    rows += [(i, "06/11/2026", "100", "cierre semana") for i in isins]
+    rows += [(i, "30/11/2026", "110" if i == robeco else "104" if i == ACWI else "100", "cierre mes") for i in isins]
+    doc, report, table = compute(_write(tmp_path, rows), date(2026, 12, 2))
+    pe = doc["personal"]
+    assert pe["start_date"] == "2026-11-06" and pe["dates"] == ["2026-11-06", "2026-11-30"]
+    assert [x["type"] for x in pe["periods"]] == ["live"]
+    assert pe["since_start"]["portfolio"] == pytest.approx(0.0075)
+    assert pe["since_start"]["benchmark"] == pytest.approx(0.03)
+    assert set(doc["portfolios"]) == {"defensive", "conservative", "balanced", "dynamic", "aggressive"}
+
+
+def test_personal_not_valued_before_its_first_month_end(tmp_path):
+    doc, report, _ = compute(_write(tmp_path, _base_rows()), date(2026, 11, 8))
+    assert doc["personal"]["periods"] == [] and doc["personal"]["dates"] == []

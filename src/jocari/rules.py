@@ -126,3 +126,30 @@ def check_portfolio(p: Portfolio, instruments: dict[str, Instrument]) -> tuple[l
         warnings += [f"{p.id} {d.effective_date}: {m}" for m in w]
     errors += [f"{p.id} benchmark: {m}" for m in check_benchmark(p)]
     return errors, warnings
+
+
+def check_personal(personal, instruments: dict[str, Instrument]) -> list[str]:
+    """My own portfolio: sound weights only; the model construction rules do not apply."""
+    p = personal.portfolio
+    asset = {i: f.asset_class for i, f in instruments.items()} | {
+        i: f["asset_class"] for i, f in personal.extra_funds.items()}
+    errors = []
+    for d in p.decisions:
+        unknown = set(d.weights) - set(asset)
+        if unknown:
+            errors.append(f"personal {d.effective_date}: unknown ISINs {sorted(unknown)}")
+            continue
+        total = sum(Decimal(str(w)) for w in d.weights.values())
+        if total != 100:
+            errors.append(f"personal {d.effective_date}: weights sum to {total}, not 100")
+        for isin, w in d.weights.items():
+            if w <= 0 or not is_half_multiple(w):
+                errors.append(f"personal {d.effective_date}: {isin} weight {w} is not a positive multiple of 0.5")
+        eq = sum(w for i, w in d.weights.items() if asset[i] == "equity")
+        if eq != p.equity_target:
+            errors.append(f"personal {d.effective_date}: equity is {eq}, target {p.equity_target}")
+    if sum(p.benchmark.values()) != 100:
+        errors.append(f"personal benchmark sums to {sum(p.benchmark.values())}, not 100")
+    if p.decisions[0].effective_date != personal.start_date:
+        errors.append("personal: the first decision must take effect on start_date")
+    return errors

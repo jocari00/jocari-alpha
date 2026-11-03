@@ -1,0 +1,47 @@
+# My own portfolio — its own page (about/portfolio/), reached only from a link on About.
+# Same engine as the model portfolios (constant weights, reset to target at every valuation
+# date; NAVs from the Drive "VL fondos" tab), but it does not follow the construction rules.
+# It starts on its first weekly close after the commit (Friday 2026-11-06), so no figure is
+# estimated; after that it is valued at every month end.
+# Funds not in config/instruments.yaml are listed under extra_funds; routine 1 must record them.
+portfolio: personal
+name: My portfolio
+start_date: 2026-11-06
+equity_target: 75          # aggressive alternatives count as equity, as in the models
+fixed_income_target: 25
+benchmark:
+  IE00B6R52259: 75     # iShares MSCI ACWI (Acc)
+  IE00B3VTMJ91: 12.5   # iShares EUR Govt Bond 1-3yr (Acc)
+  IE00BH04FZ00: 12.5   # Vanguard EUR Corporate 1-3 Year (Acc)
+extra_funds:
+  - isin: LU3038481936
+    name: Hamco Global Value Fund
+    share_class: R
+    asset_class: equity
+  - isin: LU0300834669
+    name: Alken Fund Small Cap Europe
+    share_class: R
+    asset_class: equity
+  - isin: LU2168044571
+    name: Redwheel Next Generation Emerging Markets Equity  # frontier and smaller emerging markets
+    share_class: JA EUR Acc
+    asset_class: equity
+decisions:
+  - effective_date: 2026-11-06
+    kind: initial
+    note: Initial weights, committed on 2026-11-03.
+    weights:
+      IE00BFZMJT78: 5      # Neuberger Berman Short Duration Euro Bond
+      FR0013506995: 5      # Lazard Euro Short Duration Income Opp. SRI
+      ES0140794001: 5      # Gamma Global
+      LU1112771503: 5      # Helium Selection
+      IE000N9XFSD0: 5      # Fermat Cat Bonds
+      IE00BYX5NX33: 25     # Fidelity MSCI World
+      ES0124037005: 10     # Cobas Selección
+      ES0112611001: 10     # Azvalor Internacional
+      LU3038481936: 5      # Hamco Global Value
+      LU0300834669: 5      # Alken Small Cap Europe
+      LU2168044571: 2.5    # Redwheel Next Generation EM
+      LU0329355670: 7.5    # Robeco QI Emerging Markets
+      IE00BLP5S460: 5      # Jupiter Merian Global Equity Abs. Return
+      LU1593227850: 5      # BlackRock Asia Pacific Abs. Return

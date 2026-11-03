@@ -94,3 +94,19 @@ function commitFor(date) {
     return { hash, short: hash.slice(0, 7), date: when.slice(0, 10) };
   } catch { return null; }
 }
+
+/** My own portfolio (personal/jordi.yaml), shown only on the About page. Funds outside the
+ *  model universe come from its extra_funds list. */
+export function loadPersonal() {
+  const p = loadYaml(read("personal/jordi.yaml"));
+  const { funds } = loadInstruments();
+  const extra = Object.fromEntries((p.extra_funds ?? []).map((f) => [f.isin, f]));
+  const current = p.decisions[p.decisions.length - 1];
+  const iso = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d));
+  const holdings = Object.entries(current.weights).map(([isin, w]) => {
+    const f = funds[isin] ?? extra[isin];
+    return { isin, name: f.name, share_class: f.share_class, asset_class: f.asset_class, weight: w };
+  });
+  return { name: p.name, start: iso(p.start_date), equity: p.equity_target, fixedIncome: p.fixed_income_target,
+           holdings, results: loadResults().personal ?? null };
+}

@@ -1,0 +1,80 @@
+---
+// My own portfolio (about/portfolio/), reached only from a link on About and kept out of
+// search engines: return since its start vs its benchmark, why this portfolio, and the
+// target weights by fund. Before the first month end there are no figures, only the dates.
+import Base from "../layouts/Base.astro";
+import MiniChart from "../components/MiniChart.astro";
+import { getPage } from "../lib/content.js";
+import { T, pct, pp, weight, fmtDate } from "../lib/i18n.js";
+import { loadPersonal } from "../lib/data.js";
+interface Props { lang: "en" | "es" }
+const { lang } = Astro.props;
+const t = T[lang];
+const p = loadPersonal();
+const page = getPage("my-portfolio", lang);
+const { Content } = page;
+const r = p.results;
+const valued = r && r.periods.length > 0;
+const firstValuation = new Date(Date.UTC(+p.start.slice(0, 4), +p.start.slice(5, 7), 0)).toISOString().slice(0, 10);
+const C = {
+  en: {
+    intro: `This is my own portfolio, tracked with the same method as the model portfolios: constant target weights, valued at every month end against a passive benchmark with the same equity share (${p.equity} % MSCI ACWI, ${p.fixedIncome} % short-term euro government and corporate bonds). Only percentages are shown, never amounts.`,
+    pending: `Tracking starts on ${fmtDate(lang, p.start)}; the first valuation is on ${fmtDate(lang, firstValuation)}.`,
+    since: `Since ${fmtDate(lang, p.start)}`,
+    weights: "Target weights", chart: "Growth of 100 for my portfolio and its benchmark",
+  },
+  es: {
+    intro: `Esta es mi propia cartera, seguida con el mismo método que las carteras modelo: pesos objetivo constantes, valorada a cada fin de mes frente a un benchmark pasivo con la misma proporción de renta variable (${p.equity} % MSCI ACWI, ${p.fixedIncome} % renta fija euro a corto plazo, pública y corporativa). Solo se muestran porcentajes, nunca importes.`,
+    pending: `El seguimiento empieza el ${fmtDate(lang, p.start)}; la primera valoración es el ${fmtDate(lang, firstValuation)}.`,
+    since: `Desde el ${fmtDate(lang, p.start)}`,
+    weights: "Pesos objetivo", chart: "Evolución de 100 de mi cartera y su benchmark",
+  },
+}[lang];
+const groups = [["fixed_income", t.fixedIncome], ["equity", t.equity]].map(([ac, label]) => {
+  const funds = p.holdings.filter((h) => h.asset_class === ac).sort((a, b) => b.weight - a.weight);
+  return { label, funds, total: funds.reduce((s, f) => s + f.weight, 0) };
+});
+---
+<Base lang={lang} title={page.title} path="about/portfolio/" heading={page.title} lede={C.intro} noindex>
+  {valued ? (
+    <div class="perf">
+      <p class="label">{C.since}</p>
+      <dl class="figs">
+        <div><dt class="label">{t.portfolio}</dt><dd class="figure">{pct(lang, r.since_start.portfolio)}</dd></div>
+        <div><dt class="label">{t.benchmark}</dt><dd class="figure">{pct(lang, r.since_start.benchmark)}</dd></div>
+        <div><dt class="label">{t.difference}</dt>
+          <dd class="figure">{pp(lang, r.since_start.portfolio - r.since_start.benchmark)}</dd></div>
+      </dl>
+      <MiniChart dates={r.dates} portfolio={r.portfolio} benchmark={r.benchmark} liveStart={r.start_date} label={C.chart} />
+    </div>
+  ) : <p class="muted pending">{C.pending}</p>}
+  <article class="prose md"><Content /></article>
+  <h2 class="wh">{C.weights}</h2>
+  {groups.map((g) => (
+    <table class="weights">
+      <thead><tr><th scope="col">{g.label}</th><th scope="col" class="num">{weight(lang, g.total)}</th></tr></thead>
+      <tbody>
+        {g.funds.map((f) => (
+          <tr>
+            <td><span class="name">{f.name}</span>{f.share_class && <span class="meta">{f.share_class}</span>}</td>
+            <td class="num figure">{weight(lang, f.weight)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ))}
+</Base>
+<style>
+  .perf, .pending { margin: 40px 0 48px; }
+  .md :global(h2:first-child) { margin-top: 0; }
+  .wh { margin-top: 64px; }
+  .figs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0 24px; }
+  .figs dd { margin: 4px 0 0; font-size: 1.5rem; font-weight: 300; font-variant-numeric: tabular-nums; }
+  .weights { width: 100%; border-collapse: collapse; margin: 8px 0 32px; }
+  .weights th { text-align: left; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+                color: var(--muted); padding: 0 0 8px; border-bottom: 1px solid var(--line); }
+  .weights td { padding: 12px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .name { display: block; font-weight: 500; }
+  .meta { display: block; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+</style>

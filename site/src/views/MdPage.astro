@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import { T } from "../lib/i18n.js";
 import { getPage } from "../lib/content.js";
+import { href } from "../lib/i18n.js";
 interface Props { lang: "en" | "es"; name: "methodology" | "about" | "legal" }
 const { lang, name } = Astro.props;
 const t = T[lang];
@@ -12,6 +13,10 @@ const linkedin = name === "about" ? page.frontmatter.linkedin : null;
 <Base lang={lang} title={page.title} path={`${name}/`} heading={page.title}>
   <div slot="head" style="height:1rem"></div>
   <article class="prose md"><Content /></article>
+  {name === "about" && (
+    <p>{lang === "en" ? "I also invest my own money in several of these funds. " : "Además, invierto mi propio dinero en varios de estos fondos. "}
+      <a href={href(lang, "about/portfolio/")}>{lang === "en" ? "Here you can see my portfolio" : "Aquí puedes ver mi cartera"}</a>.</p>
+  )}
   {name === "about" && (
     <p>{linkedin
       ? <>{t.inquiries}: <a href={linkedin} rel="noopener">LinkedIn</a></>

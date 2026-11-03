@@ -12,6 +12,9 @@ Outputs:
 - report (private, for routine 2's message): provisional return since the last month
   end, portfolios that could not be valued, rejected rows.
 - table: rows for the sheet tab "Carteras vs benchmark".
+
+My own portfolio (personal/jordi.yaml) is valued the same way from its own start date and
+written under "personal", which only the About page reads.
 """
 from __future__ import annotations
 
@@ -25,7 +28,8 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from .config import ROOT, Decision, Portfolio, load_benchmark_instruments, load_instruments, load_portfolios
+from .config import (ROOT, Decision, Portfolio, load_benchmark_instruments, load_instruments, load_personal,
+                     load_portfolios)
 from .engine import MAX_GAP_DAYS, align, constant_weights
 from .metrics import period_returns, ytd_return
 from .validate import Observation, ValidationError, validate
@@ -118,6 +122,16 @@ def valuation_dates(base: date, live_start: date, asof: date) -> list[date]:
     return [d for d in dates if d <= asof]
 
 
+def personal_dates(start: date, asof: date) -> list[date]:
+    """My portfolio: its start (value 100), then every month end after it, up to asof."""
+    dates = [start]
+    t = pd.Timestamp(start) + pd.offsets.MonthEnd(1)
+    while t.date() <= asof:
+        dates.append(t.date())
+        t += pd.offsets.MonthEnd(1)
+    return [d for d in dates if d <= asof]
+
+
 def _has_base(s: pd.Series, base: pd.Timestamp) -> bool:
     return not s[(s.index <= base) & (s.index > base - pd.Timedelta(days=MAX_GAP_DAYS + 1))].empty
 
@@ -128,6 +142,8 @@ def _value(decisions, isins, navs, dates):
     Returns (series or None, gaps); the series stops at the first date with a missing
     NAV, which is reported in gaps. Nothing is filled in.
     """
+    if len(dates) < 2:
+        return None, []  # nothing to value yet (my portfolio before its first month end)
     idx = pd.DatetimeIndex([pd.Timestamp(d) for d in dates])
     cols = {}
     for i in isins:
@@ -156,7 +172,10 @@ def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, dict, l
     base, live = tracking["base_date"], tracking["live_start"]
     funds = load_instruments(root)
     benches = load_benchmark_instruments(root)
-    asset_class = {i: f.asset_class for i, f in funds.items()} | {i: b["sleeve"] for i, b in benches.items()}
+    personal = load_personal(root)
+    extra = {i: f["asset_class"] for i, f in personal.extra_funds.items()} if personal else {}
+    asset_class = ({i: f.asset_class for i, f in funds.items()} | extra
+                   | {i: b["sleeve"] for i, b in benches.items()})
     data = read_nav_csv(nav_csv, asset_class, today=asof)
     dates = valuation_dates(base, live, asof)
 
@@ -167,38 +186,51 @@ def compute(nav_csv: Path, asof: date, root: Path = ROOT) -> tuple[dict, dict, l
               "YTD cartera %", "YTD benchmark %"]]
 
     for pid, p in load_portfolios(root).items():
-        holdings = sorted({i for d in p.decisions for i in d.weights})
-        bench_isins = sorted(k for k, v in p.benchmark.items() if v > 0)
-        pv, pgaps = _value(p.decisions, holdings, data.series, dates)
-        bv, bgaps = _value(_bench_decisions(p), bench_isins, data.series, dates)
-        entry = {"name": p.name, "equity_target": p.equity_target,
-                 "dates": [], "portfolio": [], "benchmark": [], "periods": []}
-        rep = {"missing": {"portfolio": pgaps, "benchmark": bgaps}, "provisional": None}
-        if pv is not None and bv is not None:
-            common = pv.index.intersection(bv.index)
-            pv, bv = pv.loc[common], bv.loc[common]
-            entry["dates"] = [t.date().isoformat() for t in common]
-            entry["portfolio"] = [round(x, 4) for x in pv]
-            entry["benchmark"] = [round(x, 4) for x in bv]
-            for (t, rp), rb in zip(period_returns(pv).items(), period_returns(bv)):
-                start = common[common.get_loc(t) - 1]
-                kind = "estimated" if t.date() <= live else "live"
-                entry["periods"].append({"from": start.date().isoformat(), "to": t.date().isoformat(), "type": kind,
-                                         "portfolio": round(rp, 6), "benchmark": round(rb, 6),
-                                         "excess": round(rp - rb, 6)})
-                table.append([p.name, start.date().isoformat(), t.date().isoformat(),
-                              "estimado" if kind == "estimated" else "live",
-                              f"{rp * 100:.2f}", f"{rb * 100:.2f}", f"{(rp - rb) * 100:.2f}",
-                              f"{ytd_return(pv, t) * 100:.2f}", f"{ytd_return(bv, t) * 100:.2f}"])
-            entry["ytd"] = {"portfolio": round(ytd_return(pv), 6), "benchmark": round(ytd_return(bv), 6)}
-            rep["provisional"] = _provisional(p, data.series, pv, asof)
-            if rep["provisional"]:
-                pr = rep["provisional"]
-                table.append([p.name, pr["since"], pr["date"], "provisional", f"{pr['portfolio'] * 100:.2f}",
-                              f"{pr['benchmark'] * 100:.2f}", f"{pr['excess'] * 100:.2f}", "", ""])
-        doc["portfolios"][pid] = entry
-        report["portfolios"][pid] = rep
+        doc["portfolios"][pid], report["portfolios"][pid] = _entry(p, data.series, dates, live, asof, table)
+
+    if personal:
+        start = personal.start_date
+        entry, rep = _entry(personal.portfolio, data.series, personal_dates(start, asof), start, asof, table)
+        if entry["dates"]:
+            entry["since_start"] = {k: round(entry[k][-1] / 100 - 1, 6) for k in ("portfolio", "benchmark")}
+        doc["personal"] = {"start_date": start.isoformat(), **entry}
+        report["personal"] = rep
     return doc, report, table
+
+
+def _entry(p: Portfolio, navs, dates, live: date, asof: date, table: list[list]) -> tuple[dict, dict]:
+    """Public entry and private report for one portfolio; appends its rows to the sheet table."""
+    holdings = sorted({i for d in p.decisions for i in d.weights})
+    bench_isins = sorted(k for k, v in p.benchmark.items() if v > 0)
+    pv, pgaps = _value(p.decisions, holdings, navs, dates)
+    bv, bgaps = _value(_bench_decisions(p), bench_isins, navs, dates)
+    entry = {"name": p.name, "equity_target": p.equity_target,
+             "dates": [], "portfolio": [], "benchmark": [], "periods": []}
+    rep = {"missing": {"portfolio": pgaps, "benchmark": bgaps}, "provisional": None}
+    if pv is None or bv is None:
+        return entry, rep
+    common = pv.index.intersection(bv.index)
+    pv, bv = pv.loc[common], bv.loc[common]
+    entry["dates"] = [t.date().isoformat() for t in common]
+    entry["portfolio"] = [round(x, 4) for x in pv]
+    entry["benchmark"] = [round(x, 4) for x in bv]
+    for (t, rp), rb in zip(period_returns(pv).items(), period_returns(bv)):
+        start = common[common.get_loc(t) - 1]
+        kind = "estimated" if t.date() <= live else "live"
+        entry["periods"].append({"from": start.date().isoformat(), "to": t.date().isoformat(), "type": kind,
+                                 "portfolio": round(rp, 6), "benchmark": round(rb, 6),
+                                 "excess": round(rp - rb, 6)})
+        table.append([p.name, start.date().isoformat(), t.date().isoformat(),
+                      "estimado" if kind == "estimated" else "live",
+                      f"{rp * 100:.2f}", f"{rb * 100:.2f}", f"{(rp - rb) * 100:.2f}",
+                      f"{ytd_return(pv, t) * 100:.2f}", f"{ytd_return(bv, t) * 100:.2f}"])
+    entry["ytd"] = {"portfolio": round(ytd_return(pv), 6), "benchmark": round(ytd_return(bv), 6)}
+    rep["provisional"] = _provisional(p, navs, pv, asof)
+    if rep["provisional"]:
+        pr = rep["provisional"]
+        table.append([p.name, pr["since"], pr["date"], "provisional", f"{pr['portfolio'] * 100:.2f}",
+                      f"{pr['benchmark'] * 100:.2f}", f"{pr['excess'] * 100:.2f}", "", ""])
+    return entry, rep
 
 
 def _provisional(p: Portfolio, navs, pv: pd.Series, asof: date) -> dict | None:
