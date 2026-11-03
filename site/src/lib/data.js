@@ -80,14 +80,14 @@ export function loadDecisionLog() {
     }
   }
   const log = Object.values(byKey).sort((a, b) => b.date.localeCompare(a.date));
-  for (const d of log) d.commit = commitFor(d.date);
+  for (const d of log) d.commit = commitFor(d.date, "decisions/");
   return log;
 }
 
 /** First commit that recorded a decision with this effective date (the proof of when it was written). */
-function commitFor(date) {
+function commitFor(date, dir) {
   try {
-    const out = execFileSync("git", ["log", "--reverse", "-S", `effective_date: ${date}`, "--format=%H %cI", "--", "decisions/"],
+    const out = execFileSync("git", ["log", "--reverse", "-S", `effective_date: ${date}`, "--format=%H %cI", "--", dir],
                              { cwd: ROOT, encoding: "utf8" }).trim().split("\n")[0];
     if (!out) return null;
     const [hash, when] = out.split(" ");
@@ -95,8 +95,8 @@ function commitFor(date) {
   } catch { return null; }
 }
 
-/** My own portfolio (personal/jordi.yaml), shown only on the About page. Funds outside the
- *  model universe come from its extra_funds list. */
+/** My own portfolio (personal/jordi.yaml), on its own page linked from About. Funds outside the
+ *  model universe come from its extra_funds list; the log links each decision to its commit. */
 export function loadPersonal() {
   const p = loadYaml(read("personal/jordi.yaml"));
   const { funds } = loadInstruments();
@@ -105,8 +105,11 @@ export function loadPersonal() {
   const iso = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d));
   const holdings = Object.entries(current.weights).map(([isin, w]) => {
     const f = funds[isin] ?? extra[isin];
-    return { isin, name: f.name, share_class: f.share_class, asset_class: f.asset_class, weight: w };
+    return { isin, name: f.name, asset_class: f.asset_class, weight: w };
   });
+  const log = p.decisions.map((d) => ({ date: iso(d.effective_date), kind: d.kind ?? "change", portfolios: [],
+                                        commit: commitFor(iso(d.effective_date), "personal/") }))
+    .sort((a, b) => b.date.localeCompare(a.date));
   return { name: p.name, start: iso(p.start_date), equity: p.equity_target, fixedIncome: p.fixed_income_target,
-           holdings, results: loadResults().personal ?? null };
+           holdings, log, results: loadResults().personal ?? null };
 }

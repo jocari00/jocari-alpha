@@ -1,12 +1,13 @@
 ---
 // Decision log as a vertical timeline: effective date, what was decided, and the commit that
-// recorded it (linked to GitHub) as proof of when it was written.
+// recorded it (linked to GitHub) as proof of when it was written. Defaults to the model
+// portfolios' log; My portfolio passes its own.
 import { fmtDate } from "../lib/i18n.js";
 import { loadDecisionLog } from "../lib/data.js";
-interface Props { lang: "en" | "es" }
+interface Props { lang: "en" | "es"; log?: any[] }
 const { lang } = Astro.props;
 const en = lang === "en";
-const log = loadDecisionLog();
+const log = Astro.props.log ?? loadDecisionLog();
 const REPO = "https://github.com/jocari00/jocari-alpha";
 const kindLabel = (k: string) => ({ initial: en ? "Initial allocation" : "Asignación inicial",
   rebalance: en ? "Rebalance" : "Rebalanceo", change: en ? "Weight change" : "Cambio de pesos" } as Record<string, string>)[k] ?? k;
@@ -17,7 +18,7 @@ const kindLabel = (k: string) => ({ initial: en ? "Initial allocation" : "Asigna
       <span class="node" aria-hidden="true"></span>
       <span class="when">{fmtDate(lang, d.date, { day: "numeric", month: "short", year: "numeric" })}</span>
       <span class="what">{kindLabel(d.kind)}</span>
-      <span class="who">{d.portfolios.length === 5 ? (en ? "All five portfolios" : "Las cinco carteras") : d.portfolios.join(", ")}</span>
+      {d.portfolios.length > 0 && <span class="who">{d.portfolios.length === 5 ? (en ? "All five portfolios" : "Las cinco carteras") : d.portfolios.join(", ")}</span>}
       {d.commit && (
         <a class="proof" href={`${REPO}/commit/${d.commit.hash}`} rel="noopener">
           {en ? "Recorded" : "Registrado"} {fmtDate(lang, d.commit.date)} <code>{d.commit.short}</code>
