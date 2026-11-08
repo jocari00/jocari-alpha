@@ -12,7 +12,7 @@
    ],
    "portfolio": [
     100.0,
-    101.8794
+    101.9043
    ],
    "benchmark": [
     100.0,
@@ -23,13 +23,13 @@
      "from": "2025-12-31",
      "to": "2026-10-30",
      "type": "estimated",
-     "portfolio": 0.018794,
+     "portfolio": 0.019043,
      "benchmark": 0.00544,
-     "excess": 0.013354
+     "excess": 0.013603
     }
    ],
    "ytd": {
-    "portfolio": 0.018794,
+    "portfolio": 0.019043,
     "benchmark": 0.00544
    }
   },
@@ -42,7 +42,7 @@
    ],
    "portfolio": [
     100.0,
-    106.0685
+    106.0837
    ],
    "benchmark": [
     100.0,
@@ -53,13 +53,13 @@
      "from": "2025-12-31",
      "to": "2026-10-30",
      "type": "estimated",
-     "portfolio": 0.060685,
+     "portfolio": 0.060837,
      "benchmark": 0.04668,
-     "excess": 0.014006
+     "excess": 0.014157
     }
    ],
    "ytd": {
-    "portfolio": 0.060685,
+    "portfolio": 0.060837,
     "benchmark": 0.04668
    }
   },
@@ -72,7 +72,7 @@
    ],
    "portfolio": [
     100.0,
-    110.3686
+    110.369
    ],
    "benchmark": [
     100.0,
@@ -83,13 +83,13 @@
      "from": "2025-12-31",
      "to": "2026-10-30",
      "type": "estimated",
-     "portfolio": 0.103686,
+     "portfolio": 0.10369,
      "benchmark": 0.08792,
-     "excess": 0.015766
+     "excess": 0.01577
     }
    ],
    "ytd": {
-    "portfolio": 0.103686,
+    "portfolio": 0.10369,
     "benchmark": 0.08792
    }
   },
@@ -102,7 +102,7 @@
    ],
    "portfolio": [
     100.0,
-    114.5692
+    114.552
    ],
    "benchmark": [
     100.0,
@@ -113,13 +113,13 @@
      "from": "2025-12-31",
      "to": "2026-10-30",
      "type": "estimated",
-     "portfolio": 0.145692,
+     "portfolio": 0.14552,
      "benchmark": 0.12916,
-     "excess": 0.016532
+     "excess": 0.01636
     }
    ],
    "ytd": {
-    "portfolio": 0.145692,
+    "portfolio": 0.14552,
     "benchmark": 0.12916
    }
   },
@@ -132,7 +132,7 @@
    ],
    "portfolio": [
     100.0,
-    119.0379
+    119.0057
    ],
    "benchmark": [
     100.0,
@@ -143,15 +143,24 @@
      "from": "2025-12-31",
      "to": "2026-10-30",
      "type": "estimated",
-     "portfolio": 0.190379,
+     "portfolio": 0.190057,
      "benchmark": 0.1704,
-     "excess": 0.019979
+     "excess": 0.019657
     }
    ],
    "ytd": {
-    "portfolio": 0.190379,
+    "portfolio": 0.190057,
     "benchmark": 0.1704
    }
   }
+ },
+ "personal": {
+  "start_date": "2026-11-06",
+  "name": "My portfolio",
+  "equity_target": 75.0,
+  "dates": [],
+  "portfolio": [],
+  "benchmark": [],
+  "periods": []
  }
 }
