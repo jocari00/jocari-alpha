@@ -22,6 +22,9 @@ que las decisiones se tomaron sin conocer el resultado.
   mes posterior. Cada fondo toma su último VL publicado en los 7 días anteriores a la fecha, lo que
   cubre los festivos y el VL semanal del fondo de bonos catastróficos. Si a una cartera le falta el VL
   de algún fondo, no se valora en esa fecha: los datos que faltan nunca se estiman ni se rellenan.
+- **Puntos semanales en los gráficos.** Entre cierres de mes, los gráficos muestran también el
+  cierre de cada viernes, con los pesos fijados en el último fin de mes; los pesos solo vuelven al
+  objetivo a fin de mes. Todas las cifras de tablas y titulares son valoraciones de fin de mes.
 - **No se anualizan rentabilidades.** Las métricas de riesgo (volatilidad, caída máxima, ratios) se
   añadirán cuando haya al menos doce meses de historial live.
 
@@ -30,7 +33,7 @@ que las decisiones se tomaron sin conocer el resultado.
 Las carteras se formalizaron en octubre de 2026. El periodo del 31 de diciembre de 2025 al 30 de
 octubre de 2026 es una **estimación**: un único periodo calculado con los pesos objetivo actuales,
 que se muestra con línea discontinua y la etiqueta *Estimado*. No es un historial real. El
-seguimiento live empieza el 30 de octubre de 2026, con una valoración a cada fin de mes.
+seguimiento live empieza el 30 de octubre de 2026, con una valoración a cada fin de mes y un punto semanal en los gráficos.
 
 ## Benchmarks
 

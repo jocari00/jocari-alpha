@@ -110,14 +110,40 @@ def test_public_results_never_contain_fund_navs(tmp_path):
                                                               "aggressive"}
 
 
-def test_public_results_only_change_when_a_valuation_closes(tmp_path):
+def test_a_week_adds_a_chart_point_but_leaves_the_valuations(tmp_path):
     out = tmp_path / "r.json"
     rows = _base_rows()
     main(["compute", "--nav", str(_write(tmp_path, rows)), "--asof", "2026-11-01", "--json", str(out)])
-    first = out.read_text()
+    first = json.loads(out.read_text())
     rows += [(i, "06/11/2026", "100,50", "cierre semana") for i in FUNDS + ETFS]  # a week later, same month
     main(["compute", "--nav", str(_write(tmp_path, rows)), "--asof", "2026-11-08", "--json", str(out)])
-    assert out.read_text() == first
+    second = json.loads(out.read_text())
+    for pid, e in second["portfolios"].items():
+        assert e["weekly"] == {"dates": ["2026-11-06"], "portfolio": [100.5], "benchmark": [100.5]}
+        assert {k: v for k, v in e.items() if k != "weekly"} == {k: v for k, v in first["portfolios"][pid].items()
+                                                                 if k != "weekly"}
+
+
+def test_weekly_points_keep_the_month_end_weights(tmp_path):
+    # Defensive: DWS (20%) +3% by 6 Nov and +5% by 13 Nov, the rest flat. Weights are reset only at
+    # the month end, so 13 Nov is +1% on the 30 Oct value (20% x 5%), not chained from 6 Nov.
+    rows = _base_rows()
+    rows += [(i, "06/11/2026", "103" if i == DWS else "100", "cierre semana") for i in FUNDS + ETFS]
+    rows += [(i, "13/11/2026", "105" if i == DWS else "100", "cierre semana") for i in FUNDS + ETFS]
+    doc, _, _ = compute(_write(tmp_path, rows), date(2026, 11, 15))
+    wk = doc["portfolios"]["defensive"]["weekly"]
+    assert wk["dates"] == ["2026-11-06", "2026-11-13"]
+    assert wk["portfolio"] == [pytest.approx(100.6), pytest.approx(101.0)]
+    assert doc["portfolios"]["defensive"]["dates"] == ["2025-12-31", "2026-10-30"]
+
+
+def test_a_week_with_a_missing_nav_is_skipped(tmp_path):
+    # DWS has nothing after 30 Oct: on 6 Nov its 30 Oct NAV is within the 7-day rule, on 13 Nov it is not.
+    weeks = ("06/11/2026", "13/11/2026")
+    rows = _base_rows() + [(i, d, "100", "cierre semana") for d in weeks for i in FUNDS + ETFS if i != DWS]
+    doc, _, _ = compute(_write(tmp_path, rows), date(2026, 11, 15))
+    assert doc["portfolios"]["defensive"]["weekly"]["dates"] == ["2026-11-06"]
+    assert doc["portfolios"]["aggressive"]["weekly"]["dates"] == ["2026-11-06", "2026-11-13"]  # holds no DWS
 
 
 def test_not_found_rows_are_skipped_quietly(tmp_path):

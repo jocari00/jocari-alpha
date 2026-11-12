@@ -4,7 +4,7 @@ import MiniChart from "../components/MiniChart.astro";
 import ReturnsTable from "../components/ReturnsTable.astro";
 import AllocationMatrix from "../components/AllocationMatrix.astro";
 import { T, href, pct, pp, fmtDate } from "../lib/i18n.js";
-import { loadPortfolios, loadResults, loadInstruments, PORTFOLIO_IDS } from "../lib/data.js";
+import { loadPortfolios, loadResults, loadInstruments, chartSeries, PORTFOLIO_IDS } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
@@ -18,10 +18,10 @@ const cards = portfolios.map((p) => {
   if (n < 2) return { ...p, r: null };
   const year = r.dates[n - 1].slice(0, 4);
   const i = Math.max(r.dates.findLastIndex((d: string) => d < `${year}-01-01`), 0);
-  return { ...p, r, ytdP: r.portfolio[n - 1] / r.portfolio[i] - 1, ytdB: r.benchmark[n - 1] / r.benchmark[i] - 1 };
+  return { ...p, r, chart: chartSeries(r), ytdP: r.portfolio[n - 1] / r.portfolio[i] - 1, ytdB: r.benchmark[n - 1] / r.benchmark[i] - 1 };
 });
 // One shared vertical scale for all five small multiples.
-const allVals = cards.flatMap((c: any) => (c.r ? [...c.r.portfolio, ...c.r.benchmark] : []));
+const allVals = cards.flatMap((c: any) => (c.r ? [...c.chart.portfolio, ...c.chart.benchmark] : []));
 const lo = allVals.length ? Math.min(...allVals) : 100, hi = allVals.length ? Math.max(...allVals) : 100;
 ---
 <Base lang={lang} title={t.nav.portfolios} path="portfolios/" heading={en ? "The five portfolios, side by side" : "Las cinco carteras, una al lado de otra"}
@@ -39,7 +39,7 @@ const lo = allVals.length ? Math.min(...allVals) : 100, hi = allVals.length ? Ma
           <span class="name">{c.name}</span>
           <span class="label mix">{en ? `${c.equity}% equity` : `${c.equity} % renta variable`}</span>
           {c.r ? (<>
-            <MiniChart dates={c.r.dates} portfolio={c.r.portfolio} benchmark={c.r.benchmark} liveStart={results.live_start} lo={lo} hi={hi}
+            <MiniChart dates={c.chart.dates} portfolio={c.chart.portfolio} benchmark={c.chart.benchmark} liveStart={results.live_start} lo={lo} hi={hi}
                        label={`${c.name}: ${t.portfolio} ${pct(lang, c.ytdP)}, ${t.benchmark} ${pct(lang, c.ytdB)}`} />
             <span class="figs">
               <span class="ytd">{pct(lang, c.ytdP)}</span>

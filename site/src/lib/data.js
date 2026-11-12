@@ -40,6 +40,16 @@ export function loadResults() {
   return { base_date: iso(tr.base_date), live_start: iso(tr.live_start), portfolios: {}, pending: true };
 }
 
+/** A portfolio's chart series: the valuation dates plus the weekly points between them
+ *  (charts only; every figure in tables and headings comes from the valuation dates). */
+export function chartSeries(r) {
+  const w = r?.weekly;
+  if (!r || !w?.dates?.length) return r;
+  const pts = [...r.dates.map((d, i) => [d, r.portfolio[i], r.benchmark[i]]),
+               ...w.dates.map((d, i) => [d, w.portfolio[i], w.benchmark[i]])].sort((a, b) => a[0].localeCompare(b[0]));
+  return { ...r, dates: pts.map((x) => x[0]), portfolio: pts.map((x) => x[1]), benchmark: pts.map((x) => x[2]) };
+}
+
 /** Sections shown on the site: the four equity blocks form one "Equity" section. */
 export const SECTIONS = [
   { id: "liquidity_short_term", blocks: ["liquidity_short_term"] },

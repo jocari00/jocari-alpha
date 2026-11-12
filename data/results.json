@@ -31,6 +31,17 @@
    "ytd": {
     "portfolio": 0.019043,
     "benchmark": 0.00544
+   },
+   "weekly": {
+    "dates": [
+     "2026-11-06"
+    ],
+    "portfolio": [
+     102.0962
+    ],
+    "benchmark": [
+     100.666
+    ]
    }
   },
   "conservative": {
@@ -61,6 +72,17 @@
    "ytd": {
     "portfolio": 0.060837,
     "benchmark": 0.04668
+   },
+   "weekly": {
+    "dates": [
+     "2026-11-06"
+    ],
+    "portfolio": [
+     105.4731
+    ],
+    "benchmark": [
+     104.2944
+    ]
    }
   },
   "balanced": {
@@ -91,6 +113,17 @@
    "ytd": {
     "portfolio": 0.10369,
     "benchmark": 0.08792
+   },
+   "weekly": {
+    "dates": [
+     "2026-11-06"
+    ],
+    "portfolio": [
+     108.8727
+    ],
+    "benchmark": [
+     107.8832
+    ]
    }
   },
   "dynamic": {
@@ -121,6 +154,17 @@
    "ytd": {
     "portfolio": 0.14552,
     "benchmark": 0.12916
+   },
+   "weekly": {
+    "dates": [
+     "2026-11-06"
+    ],
+    "portfolio": [
+     112.0869
+    ],
+    "benchmark": [
+     111.4327
+    ]
    }
   },
   "aggressive": {
@@ -151,6 +195,17 @@
    "ytd": {
     "portfolio": 0.190057,
     "benchmark": 0.1704
+   },
+   "weekly": {
+    "dates": [
+     "2026-11-06"
+    ],
+    "portfolio": [
+     115.569
+    ],
+    "benchmark": [
+     114.9427
+    ]
    }
   }
  },

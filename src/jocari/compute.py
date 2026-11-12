@@ -132,6 +132,44 @@ def personal_dates(start: date, asof: date) -> list[date]:
     return [d for d in dates if d <= asof]
 
 
+def weekly_dates(after: date, asof: date) -> list[date]:
+    """Every Friday (the weekly close) after `after`, up to asof."""
+    t = pd.Timestamp(after) + pd.offsets.Week(weekday=4)
+    out = []
+    while t.date() <= asof:
+        out.append(t.date())
+        t += pd.offsets.Week(1)
+    return out
+
+
+def _weekly(decisions, navs, values: pd.Series, fridays: list[date]) -> pd.Series:
+    """Weekly points between valuation dates, for the charts only.
+
+    Weights are still reset only at valuation dates: a Friday's value is the last valuation's
+    value times the return since then at that valuation's weights, so the month-end figures
+    are unchanged. A Friday with a missing NAV is skipped; nothing is filled in.
+    """
+    out = {}
+    for f in fridays:
+        t = pd.Timestamp(f)
+        prior = values.index[values.index < t]
+        if prior.empty or t in values.index:
+            continue
+        m = prior[-1]
+        w = [d for d in decisions if pd.Timestamp(d.effective_date) <= m][-1].weights
+        idx = pd.DatetimeIndex([m, t])
+        r = 0.0
+        for i, wt in w.items():
+            v = align({i: navs[i]}, idx)[i] if i in navs and _has_base(navs[i], m) else None
+            if v is None or v.isna().any():
+                r = None
+                break
+            r += wt / 100 * (v.iloc[1] / v.iloc[0] - 1)
+        if r is not None:
+            out[t] = values[m] * (1 + r)
+    return pd.Series(out, dtype=float)
+
+
 def _has_base(s: pd.Series, base: pd.Timestamp) -> bool:
     return not s[(s.index <= base) & (s.index > base - pd.Timedelta(days=MAX_GAP_DAYS + 1))].empty
 
@@ -225,6 +263,12 @@ def _entry(p: Portfolio, navs, dates, live: date, asof: date, table: list[list])
                       f"{rp * 100:.2f}", f"{rb * 100:.2f}", f"{(rp - rb) * 100:.2f}",
                       f"{ytd_return(pv, t) * 100:.2f}", f"{ytd_return(bv, t) * 100:.2f}"])
     entry["ytd"] = {"portfolio": round(ytd_return(pv), 6), "benchmark": round(ytd_return(bv), 6)}
+    fridays = weekly_dates(live, asof)
+    pw, bw = _weekly(p.decisions, navs, pv, fridays), _weekly(_bench_decisions(p), navs, bv, fridays)
+    wk = pw.index.intersection(bw.index)
+    entry["weekly"] = {"dates": [t.date().isoformat() for t in wk],
+                       "portfolio": [round(x, 4) for x in pw.loc[wk]],
+                       "benchmark": [round(x, 4) for x in bw.loc[wk]]}
     rep["provisional"] = _provisional(p, navs, pv, asof)
     if rep["provisional"]:
         pr = rep["provisional"]

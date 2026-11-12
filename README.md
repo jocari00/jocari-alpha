@@ -38,7 +38,8 @@ Flow:
    including the month-end NAV whenever a month closes.
 2. **Routine 2, calculation** (weekly Claude routine, after routine 1): reads "VL fondos", runs
    this repository's engine for portfolios and benchmarks, writes the results back to the
-   sheet and, when a month closes, commits the website's JSON here.
+   sheet and commits the website's JSON here whenever it changes (every week, with the new
+   weekly chart point).
 3. **Deployment** (GitHub Actions): runs the tests, builds the site and deploys to GitHub Pages.
 
 ## Setup
@@ -60,7 +61,8 @@ Routine 2 exports the "VL fondos" tab as CSV and runs:
 
 - `data/results.json` (committed, read by the website): for each portfolio and its benchmark,
   the values at each valuation date and each period's return, marked `estimated` (to the live
-  start) or `live`. It contains combined returns only, never a fund's NAV.
+  start) or `live`, plus `weekly`: each Friday's value between valuation dates, at the last
+  valuation's weights, used only by the charts. It contains combined returns only, never a fund's NAV.
 - The CSV table goes into the sheet tab "Carteras vs benchmark".
 - A `provisional` return since the last month end is included for the sheet; the site ignores it.
 - Rows that fail validation and portfolios that could not be valued are listed in the output.

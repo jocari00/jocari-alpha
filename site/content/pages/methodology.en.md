@@ -21,6 +21,9 @@ taken before the outcome was known.
   Each fund takes its last NAV published within 7 days of the date, which covers holidays and the
   weekly NAV of the cat-bond fund. If any fund of a portfolio has no NAV, the portfolio is not valued
   for that date: missing values are never estimated or filled in.
+- **Weekly points in the charts.** Between month ends the charts also show each Friday's close,
+  at the weights set at the last month end; weights are still reset only at month ends. Every
+  figure in tables and headings is a month-end valuation.
 - **Returns are not annualised.** Risk metrics (volatility, drawdown, ratios) will be added once
   there are at least twelve months of live history.
 
@@ -29,7 +32,7 @@ taken before the outcome was known.
 The portfolios were formalised in October 2026. The period from 31 December 2025 to 30 October
 2026 is an **estimate**: a single period calculated with the current target weights, shown as a
 dashed line and labelled *Estimated*. It is not a live track record. Live tracking starts on
-30 October 2026, with one valuation per month end.
+30 October 2026, with one valuation per month end and a weekly point in the charts.
 
 ## Benchmarks
 

@@ -10,6 +10,8 @@ Conventions (documented on the Methodology page and in config/tracking.yaml):
 - Constant weights: at every valuation date the portfolio is reset to its target
   weights, so a period's return is the weighted average of its funds' returns.
 - No external cash flows, so the time-weighted return equals the value ratio.
+- Weekly chart points (compute._weekly): each Friday between valuation dates, at the last
+  valuation's weights. They are not valuation dates and do not reset the weights.
 """
 from __future__ import annotations
 

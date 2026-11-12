@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import PerfChart from "../components/PerfChart.astro";
 import Composition from "../components/Composition.astro";
 import { T, href, pct, pp, fmtDate, fmtPeriod, weight } from "../lib/i18n.js";
-import { loadPortfolios, loadResults, loadInstruments, composition, PORTFOLIO_IDS } from "../lib/data.js";
+import { loadPortfolios, loadResults, loadInstruments, composition, chartSeries, PORTFOLIO_IDS } from "../lib/data.js";
 import { listCommentary, getEditorial } from "../lib/content.js";
 import XRay from "../components/XRay.astro";
 interface Props { lang: "en" | "es"; id: string }
@@ -46,7 +46,7 @@ const kicker = lang === "en"
   )}
 
   {n >= 2
-    ? <PerfChart lang={lang} data={r} liveStart={results.live_start} name={p.name} />
+    ? <PerfChart lang={lang} data={chartSeries(r)} liveStart={results.live_start} name={p.name} />
     : (
       <div class="chart-empty">
         <p class="ce-title">{t.chartTitle}</p>
