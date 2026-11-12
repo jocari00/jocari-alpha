@@ -170,6 +170,23 @@ def _weekly(decisions, navs, values: pd.Series, fridays: list[date]) -> pd.Serie
     return pd.Series(out, dtype=float)
 
 
+def _weekly_from_start(p: Portfolio, holdings, bench_isins, navs, dates, asof: date) -> dict:
+    """Weekly points before the first valuation (my portfolio before its first month end),
+    from its start at 100. Empty unless every holding and benchmark ETF has a starting NAV."""
+    empty = {"dates": [], "portfolio": [], "benchmark": []}
+    if not dates:
+        return empty
+    start = pd.Timestamp(dates[0])
+    if not all(i in navs and _has_base(navs[i], start) for i in [*holdings, *bench_isins]):
+        return empty
+    base = pd.Series([100.0], index=[start])
+    fridays = weekly_dates(dates[0], asof)
+    pw, bw = _weekly(p.decisions, navs, base, fridays), _weekly(_bench_decisions(p), navs, base, fridays)
+    wk = pw.index.intersection(bw.index)
+    return {"dates": [t.date().isoformat() for t in wk], "portfolio": [round(x, 4) for x in pw.loc[wk]],
+            "benchmark": [round(x, 4) for x in bw.loc[wk]]}
+
+
 def _has_base(s: pd.Series, base: pd.Timestamp) -> bool:
     return not s[(s.index <= base) & (s.index > base - pd.Timedelta(days=MAX_GAP_DAYS + 1))].empty
 
@@ -246,6 +263,7 @@ def _entry(p: Portfolio, navs, dates, live: date, asof: date, table: list[list])
              "dates": [], "portfolio": [], "benchmark": [], "periods": []}
     rep = {"missing": {"portfolio": pgaps, "benchmark": bgaps}, "provisional": None}
     if pv is None or bv is None:
+        entry["weekly"] = _weekly_from_start(p, holdings, bench_isins, navs, dates, asof)
         return entry, rep
     common = pv.index.intersection(bv.index)
     pv, bv = pv.loc[common], bv.loc[common]

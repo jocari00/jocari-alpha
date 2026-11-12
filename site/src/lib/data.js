@@ -45,7 +45,9 @@ export function loadResults() {
 export function chartSeries(r) {
   const w = r?.weekly;
   if (!r || !w?.dates?.length) return r;
-  const pts = [...r.dates.map((d, i) => [d, r.portfolio[i], r.benchmark[i]]),
+  // My portfolio before its first month end: the weekly points start from its start date at 100.
+  const head = r.dates.length ? [] : r.start_date ? [[r.start_date, 100, 100]] : [];
+  const pts = [...head, ...r.dates.map((d, i) => [d, r.portfolio[i], r.benchmark[i]]),
                ...w.dates.map((d, i) => [d, w.portfolio[i], w.benchmark[i]])].sort((a, b) => a[0].localeCompare(b[0]));
   return { ...r, dates: pts.map((x) => x[0]), portfolio: pts.map((x) => x[1]), benchmark: pts.map((x) => x[2]) };
 }

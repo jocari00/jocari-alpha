@@ -180,3 +180,19 @@ def test_personal_portfolio_from_its_start_date(tmp_path):
 def test_personal_not_valued_before_its_first_month_end(tmp_path):
     doc, report, _ = compute(_write(tmp_path, _base_rows()), date(2026, 11, 8))
     assert doc["personal"]["periods"] == [] and doc["personal"]["dates"] == []
+
+
+def test_personal_weekly_points_before_its_first_month_end(tmp_path):
+    # Start 6 Nov at 100; on 13 Nov Robeco (7.5%) is +10% and ACWI (75% of the benchmark) +4%.
+    from jocari.config import load_personal
+    personal = load_personal()
+    isins = sorted({i for d in personal.portfolio.decisions for i in d.weights} | set(ETFS))
+    robeco = "LU0329355670"
+    rows = _base_rows()
+    rows += [(i, "06/11/2026", "100", "cierre semana") for i in isins]
+    rows += [(i, "13/11/2026", "110" if i == robeco else "104" if i == ACWI else "100", "cierre semana") for i in isins]
+    doc, _, _ = compute(_write(tmp_path, rows), date(2026, 11, 15))
+    pe = doc["personal"]
+    assert pe["dates"] == [] and pe["periods"] == []
+    assert pe["weekly"]["dates"] == ["2026-11-13"]
+    assert pe["weekly"]["portfolio"] == [pytest.approx(100.75)] and pe["weekly"]["benchmark"] == [pytest.approx(103.0)]

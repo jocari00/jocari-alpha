@@ -216,6 +216,11 @@
   "dates": [],
   "portfolio": [],
   "benchmark": [],
-  "periods": []
+  "periods": [],
+  "weekly": {
+   "dates": [],
+   "portfolio": [],
+   "benchmark": []
+  }
  }
 }

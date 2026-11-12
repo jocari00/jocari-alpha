@@ -7,7 +7,7 @@ import MiniChart from "../components/MiniChart.astro";
 import DecisionTimeline from "../components/DecisionTimeline.astro";
 import { getPage } from "../lib/content.js";
 import { T, pct, pp, weight, fmtDate } from "../lib/i18n.js";
-import { loadPersonal } from "../lib/data.js";
+import { loadPersonal, chartSeries } from "../lib/data.js";
 interface Props { lang: "en" | "es" }
 const { lang } = Astro.props;
 const t = T[lang];
@@ -16,17 +16,19 @@ const page = getPage("my-portfolio", lang);
 const { Content } = page;
 const r = p.results;
 const valued = r && r.periods.length > 0;
+const chart = r ? chartSeries(r) : null;
+const hasChart = (chart?.dates?.length ?? 0) >= 2;
 const firstValuation = new Date(Date.UTC(+p.start.slice(0, 4), +p.start.slice(5, 7), 0)).toISOString().slice(0, 10);
 const C = {
   en: {
-    intro: `This is my own portfolio, tracked with the same method as the model portfolios: constant target weights, valued at every month end against a passive benchmark with the same equity share (${p.equity} % MSCI ACWI, ${p.fixedIncome} % short-term euro government and corporate bonds). Only percentages are shown, never amounts.`,
-    pending: `Tracking starts on ${fmtDate(lang, p.start)}; the first valuation is on ${fmtDate(lang, firstValuation)}.`,
+    intro: `This is my own portfolio, tracked with the same method as the model portfolios: constant target weights, valued at every month end, with a weekly point in the chart, against a passive benchmark with the same equity share (${p.equity} % MSCI ACWI, ${p.fixedIncome} % short-term euro government and corporate bonds). Only percentages are shown, never amounts.`,
+    pending: `Tracking starts on ${fmtDate(lang, p.start)}; the first valuation is on ${fmtDate(lang, firstValuation)}. Until then the chart shows the weekly closes.`,
     since: `Since ${fmtDate(lang, p.start)}`,
     weights: "Target weights", log: "Decision log", history: "Full history of the weights on GitHub", chart: "Growth of 100 for my portfolio and its benchmark",
   },
   es: {
-    intro: `Esta es mi propia cartera, seguida con el mismo método que las carteras modelo: pesos objetivo constantes, valorada a cada fin de mes frente a un benchmark pasivo con la misma proporción de renta variable (${p.equity} % MSCI ACWI, ${p.fixedIncome} % renta fija euro a corto plazo, pública y corporativa). Solo se muestran porcentajes, nunca importes.`,
-    pending: `El seguimiento empieza el ${fmtDate(lang, p.start)}; la primera valoración es el ${fmtDate(lang, firstValuation)}.`,
+    intro: `Esta es mi propia cartera, seguida con el mismo método que las carteras modelo: pesos objetivo constantes, valorada a cada fin de mes, con un punto semanal en el gráfico, frente a un benchmark pasivo con la misma proporción de renta variable (${p.equity} % MSCI ACWI, ${p.fixedIncome} % renta fija euro a corto plazo, pública y corporativa). Solo se muestran porcentajes, nunca importes.`,
+    pending: `El seguimiento empieza el ${fmtDate(lang, p.start)}; la primera valoración es el ${fmtDate(lang, firstValuation)}. Hasta entonces el gráfico muestra los cierres semanales.`,
     since: `Desde el ${fmtDate(lang, p.start)}`,
     weights: "Pesos objetivo", log: "Registro de decisiones", history: "Historial completo de los pesos en GitHub", chart: "Evolución de 100 de mi cartera y su benchmark",
   },
@@ -46,9 +48,15 @@ const groups = [["fixed_income", t.fixedIncome], ["equity", t.equity]].map(([ac,
         <div><dt class="label">{t.difference}</dt>
           <dd class="figure">{pp(lang, r.since_start.portfolio - r.since_start.benchmark)}</dd></div>
       </dl>
-      <MiniChart dates={r.dates} portfolio={r.portfolio} benchmark={r.benchmark} liveStart={r.start_date} label={C.chart} />
+      <MiniChart dates={chart.dates} portfolio={chart.portfolio} benchmark={chart.benchmark} liveStart={r.start_date} label={C.chart} />
     </div>
-  ) : <p class="muted pending">{C.pending}</p>}
+  ) : (
+    <div class="pre">
+      <p class="muted">{C.pending}</p>
+      {hasChart && <ul class="key"><li><i class="k-p"></i>{t.portfolio}</li><li><i class="k-b"></i>{t.benchmark}</li></ul>}
+      {hasChart && <MiniChart dates={chart.dates} portfolio={chart.portfolio} benchmark={chart.benchmark} liveStart={r.start_date} label={C.chart} />}
+    </div>
+  )}
   <article class="prose md"><Content /></article>
   <h2 class="wh">{C.weights}</h2>
   {groups.map((g) => (
@@ -69,7 +77,11 @@ const groups = [["fixed_income", t.fixedIncome], ["equity", t.equity]].map(([ac,
   <p><a href="https://github.com/jocari00/jocari-alpha/commits/main/personal/jordi.yaml" rel="noopener">{C.history}</a></p>
 </Base>
 <style>
-  .perf, .pending { margin: 40px 0 48px; }
+  .perf, .pre { margin: 40px 0 48px; }
+  .pre { max-width: 46rem; }
+  .key { display: flex; flex-wrap: wrap; gap: 6px 22px; list-style: none; padding: 0; margin: 16px 0 12px; font-size: 0.85rem; color: var(--text-2); }
+  .key i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; margin-right: 8px; vertical-align: middle; }
+  .key .k-p { border-color: var(--series-1); } .key .k-b { border-color: var(--series-2); }
   .md :global(h2:first-child) { margin-top: 0; }
   .wh { margin-top: 64px; }
   .figs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0 24px; }
